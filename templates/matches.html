@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>대진표 결과</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container my-4">
+    <h2>대진표 결과</h2>
+    <a href="/" class="btn btn-secondary mb-3">← 돌아가기</a>
+    <div>
+        {% for court, teamA, teamB in courts %}
+            <h5>{{ court }}</h5>
+            <p><strong>Team A:</strong> {{ teamA|map(attribute="name")|join(", ") }}<br>
+               <strong>Team B:</strong> {{ teamB|map(attribute="name")|join(", ") }}</p>
+        {% endfor %}
+    </div>
+</body>
+</html>
