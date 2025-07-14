@@ -3,6 +3,9 @@ import openpyxl
 from flask import Flask, request, redirect, render_template, jsonify
 
 app = Flask(__name__)
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 DATA_FILE = "members_data.json"
 
 def load_data():
@@ -49,6 +52,42 @@ def delete(idx):
         del members[idx]
     save_data(members)
     return redirect(url_for("index"))
+
+@app.route("/upload", methods=["POST"])
+def upload_excel():
+    file = request.files["file"]
+    if not file.filename.endswith(".xlsx"):
+        return "엑셀 파일만 업로드 가능합니다.", 400
+
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    file.save(filepath)
+
+    wb = openpyxl.load_workbook(filepath)
+    sheet = wb.active
+    new_members = []
+
+    for row in sheet.iter_rows(min_row=2, values_only=True):
+        if not row or not row[0]:
+            continue
+        name = str(row[0]).strip()
+        gender = str(row[1]).strip() if len(row) > 1 and row[1] else "남"
+        rank = int(row[2]) if len(row) > 2 and row[2] else 0
+
+        new_members.append({
+            "name": name,
+            "gender": gender if gender in ["남", "여"] else "남",
+            "rank": rank,
+            "tuesday": False,
+            "thursday": False,
+            "participated": False
+        })
+
+    members = load_data()
+    members.extend(new_members)
+    save_data(members)
+
+    return redirect(url_for("index"))
+
 
 @app.route("/generate")
 def generate_match():
