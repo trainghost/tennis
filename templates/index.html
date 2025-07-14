@@ -18,6 +18,12 @@
         <div class="col"><input type="number" name="rank" class="form-control" placeholder="순위"></div>
         <div class="col"><button class="btn btn-primary w-100">추가</button></div>
         <div class="col"><a href="/generate" class="btn btn-success w-100">대진표 생성</a></div>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+  <label>엑셀 업로드로 회원 추가:</label>
+  <input type="file" name="file" accept=".xlsx">
+  <button type="submit">업로드</button>
+</form>
+
     </form>
     <table class="table table-bordered table-hover text-center">
         <thead class="table-light"><tr><th>#</th><th>이름</th><th>성별</th><th>순위</th><th>화</th><th>목</th><th>참여</th><th>삭제</th></tr></thead>
