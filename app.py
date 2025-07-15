@@ -23,6 +23,7 @@ def save_data(members):
 @app.route("/", methods=["GET", "POST"])
 def index():
     members = load_data()
+
     if request.method == "POST":
         name = request.form["name"].strip()
         gender = request.form["gender"]
@@ -37,7 +38,16 @@ def index():
         })
         save_data(members)
         return redirect(url_for("index"))
-    return render_template("index.html", members=members)
+
+    # GET 요청일 경우 정렬 적용
+    sort = request.args.get("sort")
+    if sort == "asc":
+        members.sort(key=lambda x: x["rank"])
+    elif sort == "desc":
+        members.sort(key=lambda x: x["rank"], reverse=True)
+
+    return render_template("index.html", members=members, sort=sort)
+
 
 @app.route("/toggle/<int:idx>/<key>")
 def toggle(idx, key):
