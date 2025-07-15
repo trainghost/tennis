@@ -2,18 +2,26 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>대진표 결과</title>
+    <title>대진표</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="container my-4">
-    <h2>대진표 결과</h2>
-    <a href="/" class="btn btn-secondary mb-3">← 돌아가기</a>
-    <div>
-        {% for court, teamA, teamB in courts %}
-            <h5>{{ court }}</h5>
-            <p><strong>Team A:</strong> {{ teamA|map(attribute="name")|join(", ") }}<br>
-               <strong>Team B:</strong> {{ teamB|map(attribute="name")|join(", ") }}</p>
-        {% endfor %}
+<body class="container my-5">
+    <h2 class="mb-4">매칭 1 (06:10 ~ 06:35)</h2>
+
+    <div class="list-group">
+      {% for court, teamA, teamB in courts %}
+        <div class="list-group-item">
+          <strong>{{ court }}:</strong>
+          {{ teamA[0].name }}({{ teamA[0].rank }}), {{ teamA[1].name }}({{ teamA[1].rank }}) 
+          vs 
+          {{ teamB[0].name }}({{ teamB[0].rank }}), {{ teamB[1].name }}({{ teamB[1].rank }})
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="mt-4">
+        <a href="/" class="btn btn-secondary">돌아가기</a>
     </div>
 </body>
 </html>
+
