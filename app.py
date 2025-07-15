@@ -3,6 +3,7 @@ import json
 import openpyxl
 from flask import Flask, request, redirect, render_template, jsonify, url_for
 from itertools import combinations
+import sys
 
 
 app = Flask(__name__)
@@ -242,6 +243,8 @@ def generate_match():
 
     remain2_filtered = females2 + males2
     remain2_filtered = [m for m in remain2_filtered if m["name"] not in used_names]
+
+    print("매칭 2 남은 인원 수:", len(remain2_filtered), file=sys.stderr)
 
     if len(females2) >= 4:
         mixed = [m for m in remain2_filtered if m["gender"] == "남"]
