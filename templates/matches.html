@@ -7,23 +7,18 @@
 </head>
 <body class="container my-5">
     {% for match in matches %}
-
-    <h2 class="mb-4">{{ match.title }}</h2>
-    {% if match.courts %}
-      <div class="list-group mb-4">
-        {% for court, teamA, teamB in match.courts %}
-          <div class="list-group-item">
-            <strong>{{ court }}:</strong>
-            {{ teamA[0].name }}({{ teamA[0].rank }}), {{ teamA[1].name }}({{ teamA[1].rank }}) 
-            vs 
-            {{ teamB[0].name }}({{ teamB[0].rank }}), {{ teamB[1].name }}({{ teamB[1].rank }})
-      </div>
+        <h2 class="mb-3">{{ match.title }}</h2>
+        <div class="list-group mb-4">
+            {% for court, teamA, teamB in match.courts %}
+                <div class="list-group-item">
+                    <strong>{{ court }}:</strong>
+                    {{ teamA[0].name }}({{ teamA[0].rank }}), {{ teamA[1].name }}({{ teamA[1].rank }})
+                    vs
+                    {{ teamB[0].name }}({{ teamB[0].rank }}), {{ teamB[1].name }}({{ teamB[1].rank }})
+                </div>
+            {% endfor %}
+        </div>
     {% endfor %}
-  </div>
-{% else %}
-  <p class="text-danger">※ 이 매칭에는 배정된 코트가 없습니다.</p>
-{% endif %}
-
 
     <div class="mt-4">
         <a href="/" class="btn btn-secondary">돌아가기</a>
