@@ -286,7 +286,6 @@ def generate_match():
         "courts": courts2
     })
 
-    print("✅ 매칭 2 - courts2 생성된 수:", len(courts2), file=sys.stderr)
     print("✅ 매칭 2 - 최종 조합 인원 수:", len(remain2_filtered), file=sys.stderr)
     print("✅ 매칭 2 - 사용가능 여자 수:", len(females2), file=sys.stderr)
     print("✅ 매칭 2 - 사용가능 남자 수 (하위2제외):", len(males2), file=sys.stderr)
