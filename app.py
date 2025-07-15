@@ -73,32 +73,30 @@ def delete(idx):
 
 @app.route("/upload", methods=["POST"])
 def upload_excel():
-    if "file" not in request.files:
-        return "No file part", 400
     file = request.files["file"]
-    if file.filename == "":
-        return "No selected file", 400
-
-    try:
+    if file and file.filename.endswith(".xlsx"):
         wb = openpyxl.load_workbook(file)
         sheet = wb.active
-        members = load_data()
+
+        headers = [cell.value for cell in sheet[1]]
+        members = []
 
         for row in sheet.iter_rows(min_row=2, values_only=True):
-            name, gender, rank = row[:3]
+            data = dict(zip(headers, row))
             members.append({
-                "name": name.strip() if isinstance(name, str) else "",
-                "gender": gender if gender in ["남", "여"] else "남",
-                "rank": int(rank) if isinstance(rank, (int, float)) else 0,
-                "tuesday": False,
-                "thursday": False,
-                "participated": False
+                "name": data.get("name", "").strip(),
+                "gender": data.get("gender", "").strip(),
+                "rank": int(data.get("rank", 0) or 0),
+                "tuesday": bool(data.get("tuesday")),
+                "thursday": bool(data.get("thursday")),
+                "participated": bool(data.get("participated"))
             })
-        save_data(members)
-    except Exception as e:
-        return f"파일 처리 중 오류: {str(e)}", 500
 
-    return redirect(url_for("index"))  # ✅ 꼭 있어야 함!
+        save_data(members)
+        return redirect(url_for("index"))
+
+    return "올바른 엑셀 파일(.xlsx)을 업로드하세요.", 400
+
 
 @app.route("/update_participation", methods=["POST"])
 def update_participation():
