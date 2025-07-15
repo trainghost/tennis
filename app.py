@@ -231,6 +231,13 @@ def generate_match():
 
     # 매칭 2 (06:35 ~ 07:00)
     courts2 = []
+
+    import sys
+    print("✅ 매칭 2 - 필터링 전 총 인원 수:", len(remain2), file=sys.stderr)
+    print("✅ 매칭 2 - 사용가능 여자 수:", len(available_females), file=sys.stderr)
+    print("✅ 매칭 2 - 사용가능 남자 수 (하위2제외):", len(available_males), file=sys.stderr)
+    print("✅ 매칭 2 - 최종 조합 인원 수:", len(remain2_filtered), file=sys.stderr)
+
     remain2 = [m for m in members if m["name"] not in used_names]
     females2 = [m for m in remain2 if m["gender"] == "여"]
     males2 = [m for m in remain2 if m["gender"] == "남"]
@@ -287,6 +294,7 @@ def generate_match():
 
     return render_template("matches.html", matches=matches)
 
+print("✅ 매칭 2 - courts2 생성된 수:", len(courts2), file=sys.stderr)
 
     
 
