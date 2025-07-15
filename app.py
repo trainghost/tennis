@@ -100,6 +100,15 @@ def upload_excel():
 
     return redirect(url_for("index"))  # ✅ 꼭 있어야 함!
 
+@app.route("/update_participation", methods=["POST"])
+def update_participation():
+    members = load_data()
+    for i, member in enumerate(members):
+        checkbox_name = f"participated_{i}"
+        member["participated"] = checkbox_name in request.form
+    save_data(members)
+    return redirect(url_for("index"))
+
         
 @app.route("/update_rank/<int:idx>", methods=["POST"])
 def update_rank(idx):
