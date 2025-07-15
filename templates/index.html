@@ -7,6 +7,8 @@
 </head>
 <body class="container my-4">
     <h2>회원 체크리스트</h2>
+
+    <!-- 회원 추가 -->
     <form method="post" class="row g-2 mb-3">
         <div class="col"><input type="text" name="name" class="form-control" placeholder="이름" required></div>
         <div class="col">
@@ -18,64 +20,60 @@
         <div class="col"><input type="number" name="rank" class="form-control" placeholder="순위"></div>
         <div class="col"><button class="btn btn-primary w-100">추가</button></div>
         <div class="col"><a href="/generate" class="btn btn-success w-100">대진표 생성</a></div>
-     
     </form>
 
-    <form action="/upload" method="post" enctype="multipart/form-data">
-          <label>엑셀 업로드로 회원 추가:</label>
-          <input type="file" name="file" accept=".xlsx">
-          <button type="submit">업로드</button>
+    <!-- 엑셀 업로드 -->
+    <form action="/upload" method="post" enctype="multipart/form-data" class="mb-3">
+        <label>엑셀 업로드로 회원 추가:</label>
+        <input type="file" name="file" accept=".xlsx">
+        <button type="submit" class="btn btn-secondary btn-sm">업로드</button>
     </form>
 
-<form method="get" action="/">
-  <label for="sort">정렬:</label>
-  <select name="sort" onchange="this.form.submit()">
-    <option value="">기본</option>
-    <option value="asc" {% if sort == 'asc' %}selected{% endif %}>순위 오름차순</option>
-    <option value="desc" {% if sort == 'desc' %}selected{% endif %}>순위 내림차순</option>
-    <option value="participated_first" {% if sort == 'participated_first' %}selected{% endif %}>참여자 먼저</option>
-    <option value="participated_last" {% if sort == 'participated_last' %}selected{% endif %}>비참여자 먼저</option>
-    <option value="late_first" {% if sort == 'late_first' %}selected{% endif %}>늦참자 먼저</option>
-    <option value="late_last" {% if sort == 'late_last' %}selected{% endif %}>정참자 먼저</option>
+    <!-- 정렬 -->
+    <form method="get" action="/" class="mb-3">
+        <label for="sort">정렬:</label>
+        <select name="sort" onchange="this.form.submit()" class="form-select w-auto d-inline">
+            <option value="">기본</option>
+            <option value="asc" {% if sort == 'asc' %}selected{% endif %}>순위 오름차순</option>
+            <option value="desc" {% if sort == 'desc' %}selected{% endif %}>순위 내림차순</option>
+            <option value="participated_first" {% if sort == 'participated_first' %}selected{% endif %}>참여자 먼저</option>
+            <option value="participated_last" {% if sort == 'participated_last' %}selected{% endif %}>비참여자 먼저</option>
+            <option value="late_first" {% if sort == 'late_first' %}selected{% endif %}>늦참자 먼저</option>
+            <option value="late_last" {% if sort == 'late_last' %}selected{% endif %}>정참자 먼저</option>
+        </select>
+    </form>
 
-  </select>
-</form>
-
-
-    
-<form method="post" action="/update_participation">
-  <table class="table table-bordered table-hover text-center">
-    <thead class="table-light">
-      <tr>
-        <th>#</th><th>이름</th><th>성별</th><th>순위</th><th>화</th><th>목</th><th>참여</th><th>늦참</th><th>삭제</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      {% for m in members %}
-      <tr>
-        <td>{{ loop.index }}</td>
-        <td>{{ m.name }}</td>
-        <td>{{ m.gender }}</td>
-        <td>
-          <form action="{{ url_for('update_rank', idx=loop.index0) }}" method="post" style="display:inline;">
-            <input type="number" name="rank" value="{{ m.rank }}" style="width: 50px;" />
-            <button type="submit" class="btn btn-sm btn-primary">저장</button>
-          </form>
-        </td>
-        <td><a href="/toggle/{{ loop.index0 }}/tuesday">{{ "✅" if m.tuesday else "" }}</a></td>
-        <td><a href="/toggle/{{ loop.index0 }}/thursday">{{ "✅" if m.thursday else "" }}</a></td>
-        <td>
-          <input type="checkbox" name="participated_{{ loop.index0 }}" {% if m.participated %}checked{% endif %}>
-        </td>
-        <td><a href="/toggle/{{ loop.index0 }}/late">{{ "✅" if m.get('late') else "" }}</a></td>
-        <td><a href="/delete/{{ loop.index0 }}" class="btn btn-sm btn-danger">삭제</a></td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <button type="submit" class="btn btn-success">참여 상태 저장</button>
-</form>
+    <!-- 체크리스트 -->
+    <form method="post" action="/update_participation">
+        <table class="table table-bordered table-hover text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th><th>이름</th><th>성별</th><th>순위</th><th>화</th><th>목</th><th>참여</th><th>늦참</th><th>삭제</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in members %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ m.name }}</td>
+                    <td>{{ m.gender }}</td>
+                    <td>
+                        <form action="{{ url_for('update_rank', idx=loop.index0) }}" method="post" style="display:inline-block;">
+                            <input type="number" name="rank" value="{{ m.rank }}" style="width: 50px;" />
+                            <button type="submit" class="btn btn-sm btn-primary">저장</button>
+                        </form>
+                    </td>
+                    <td><a href="/toggle/{{ loop.index0 }}/tuesday">{{ "✅" if m.tuesday else "" }}</a></td>
+                    <td><a href="/toggle/{{ loop.index0 }}/thursday">{{ "✅" if m.thursday else "" }}</a></td>
+                    <td><input type="checkbox" name="participated_{{ loop.index0 }}" {% if m.participated %}checked{% endif %}></td>
+                    <td><a href="/toggle/{{ loop.index0 }}/late">{{ "✅" if m.get('late') else "" }}</a></td>
+                    <td><a href="/delete/{{ loop.index0 }}" class="btn btn-sm btn-danger">삭제</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-success">참여 상태 저장</button>
+    </form>
 
 </body>
 </html>
