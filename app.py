@@ -42,17 +42,17 @@ def index():
     # GET 요청일 경우 정렬 적용
     sort = request.args.get("sort")
 
-
-if sort == "asc":
-    members.sort(key=lambda x: x["rank"])
-elif sort == "desc":
-    members.sort(key=lambda x: x["rank"], reverse=True)
-elif sort == "participated_first":
-    members.sort(key=lambda x: not x.get("participated", False))  # 참여한 사람 True가 앞으로
-elif sort == "participated_last":
-    members.sort(key=lambda x: x.get("participated", False))  # 참여 안 한 사람이 앞으로
+    if sort == "asc":
+        members.sort(key=lambda x: x["rank"])
+    elif sort == "desc":
+        members.sort(key=lambda x: x["rank"], reverse=True)
+    elif sort == "participated_first":
+        members.sort(key=lambda x: not x.get("participated", False))  # 참여한 사람 먼저
+    elif sort == "participated_last":
+        members.sort(key=lambda x: x.get("participated", False))  # 참여 안 한 사람 먼저
 
     return render_template("index.html", members=members, sort=sort)
+
 
 
 @app.route("/toggle/<int:idx>/<key>")
