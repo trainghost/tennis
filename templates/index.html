@@ -40,28 +40,37 @@
 
 
     
-    <table class="table table-bordered table-hover text-center">
-        <thead class="table-light"><tr><th>#</th><th>이름</th><th>성별</th><th>순위</th><th>화</th><th>목</th><th>참여</th><th>삭제</th></tr></thead>
-        <tbody>
-            {% for m in members %}
-            <tr>
-                <td>{{ loop.index }}</td>
-                <td>{{ m.name }}</td>
-                <td>{{ m.gender }}</td>
-                <td>
-                  <form action="{{ url_for('update_rank', idx=loop.index0) }}" method="post" style="display:inline;">
-                    <input type="number" name="rank" value="{{ m.rank }}" style="width: 50px;" />
-                    <button type="submit" class="btn btn-sm btn-primary">저장</button>
-                  </form>
-                </td>
+<form method="post" action="/update_participation">
+  <table class="table table-bordered table-hover text-center">
+    <thead class="table-light">
+      <tr>
+        <th>#</th><th>이름</th><th>성별</th><th>순위</th><th>화</th><th>목</th><th>참여</th><th>삭제</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in members %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ m.name }}</td>
+        <td>{{ m.gender }}</td>
+        <td>
+          <form action="{{ url_for('update_rank', idx=loop.index0) }}" method="post" style="display:inline;">
+            <input type="number" name="rank" value="{{ m.rank }}" style="width: 50px;" />
+            <button type="submit" class="btn btn-sm btn-primary">저장</button>
+          </form>
+        </td>
+        <td><a href="/toggle/{{ loop.index0 }}/tuesday">{{ "✅" if m.tuesday else "" }}</a></td>
+        <td><a href="/toggle/{{ loop.index0 }}/thursday">{{ "✅" if m.thursday else "" }}</a></td>
+        <td>
+          <input type="checkbox" name="participated_{{ loop.index0 }}" {% if m.participated %}checked{% endif %}>
+        </td>
+        <td><a href="/delete/{{ loop.index0 }}" class="btn btn-sm btn-danger">삭제</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <button type="submit" class="btn btn-success">참여 상태 저장</button>
+</form>
 
-                <td><a href="/toggle/{{ loop.index0 }}/tuesday">{{ "✅" if m.tuesday else "" }}</a></td>
-                <td><a href="/toggle/{{ loop.index0 }}/thursday">{{ "✅" if m.thursday else "" }}</a></td>
-                <td><a href="/toggle/{{ loop.index0 }}/participated">{{ "✅" if m.participated else "" }}</a></td>
-                <td><a href="/delete/{{ loop.index0 }}" class="btn btn-sm btn-danger">삭제</a></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 </body>
 </html>
