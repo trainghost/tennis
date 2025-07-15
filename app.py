@@ -292,9 +292,6 @@ def generate_match():
 
     return render_template("matches.html", matches=matches)
 
-print("✅ 매칭 2 - courts2 생성된 수:", len(courts2), file=sys.stderr)
-
-    
 
 
 
