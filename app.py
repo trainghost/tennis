@@ -57,9 +57,33 @@ def delete(idx):
 
 @app.route("/upload", methods=["POST"])
 def upload_excel():
+    if "file" not in request.files:
+        return "No file part", 400
     file = request.files["file"]
-    if not file.filename.endswith(".xlsx"):
-        return "엑셀 파일만 업로드 가능합니다.", 400
+    if file.filename == "":
+        return "No selected file", 400
+
+    try:
+        wb = openpyxl.load_workbook(file)
+        sheet = wb.active
+        members = load_data()
+
+        for row in sheet.iter_rows(min_row=2, values_only=True):
+            name, gender, rank = row[:3]
+            members.append({
+                "name": name.strip() if isinstance(name, str) else "",
+                "gender": gender if gender in ["남", "여"] else "남",
+                "rank": int(rank) if isinstance(rank, (int, float)) else 0,
+                "tuesday": False,
+                "thursday": False,
+                "participated": False
+            })
+        save_data(members)
+    except Exception as e:
+        return f"파일 처리 중 오류: {str(e)}", 500
+
+    return redirect(url_for("index"))  # ✅ 꼭 있어야 함!
+
         
 @app.route("/update_rank/<int:idx>", methods=["POST"])
 def update_rank(idx):
