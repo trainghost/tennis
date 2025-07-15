@@ -60,6 +60,16 @@ def upload_excel():
     file = request.files["file"]
     if not file.filename.endswith(".xlsx"):
         return "엑셀 파일만 업로드 가능합니다.", 400
+        
+@app.route("/update_rank/<int:idx>", methods=["POST"])
+def update_rank(idx):
+    members = load_data()
+    new_rank = int(request.form.get("rank", 0))
+    if 0 <= idx < len(members):
+        members[idx]["rank"] = new_rank
+        save_data(members)
+    return redirect(url_for("index"))
+
 
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
     file.save(filepath)
