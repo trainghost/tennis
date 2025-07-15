@@ -104,36 +104,6 @@ def update_rank(idx):
         save_data(members)
     return redirect(url_for("index"))
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    members = load_data()
-    sort = request.args.get("sort")
-
-    if sort == "asc":
-        members.sort(key=lambda m: m.get("rank", 0))
-    elif sort == "desc":
-        members.sort(key=lambda m: m.get("rank", 0), reverse=True)
-
-    if request.method == "POST":
-        name = request.form["name"].strip()
-        gender = request.form["gender"]
-        rank = int(request.form["rank"] or 0)
-        members.append({
-            "name": name,
-            "gender": gender,
-            "rank": rank,
-            "tuesday": False,
-            "thursday": False,
-            "participated": False
-        })
-        save_data(members)
-        return redirect(url_for("index"))
-
-    return render_template("index.html", members=members, sort=sort)
-
-
-
-
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
     file.save(filepath)
 
