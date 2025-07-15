@@ -27,10 +27,7 @@
           <button type="submit">업로드</button>
     </form>
 
-    <form action="{{ url_for('update_rank', idx=loop.index0) }}" method="post" style="display:inline;">
-      <input type="number" name="rank" value="{{ member.rank }}" style="width: 50px;" />
-      <button type="submit">저장</button>
-    </form>
+
 
     
     <table class="table table-bordered table-hover text-center">
@@ -41,7 +38,13 @@
                 <td>{{ loop.index }}</td>
                 <td>{{ m.name }}</td>
                 <td>{{ m.gender }}</td>
-                <td>{{ m.rank }}</td>
+                <td>
+                  <form action="{{ url_for('update_rank', idx=loop.index0) }}" method="post" style="display:inline;">
+                    <input type="number" name="rank" value="{{ m.rank }}" style="width: 50px;" />
+                    <button type="submit" class="btn btn-sm btn-primary">저장</button>
+                  </form>
+                </td>
+
                 <td><a href="/toggle/{{ loop.index0 }}/tuesday">{{ "✅" if m.tuesday else "" }}</a></td>
                 <td><a href="/toggle/{{ loop.index0 }}/thursday">{{ "✅" if m.thursday else "" }}</a></td>
                 <td><a href="/toggle/{{ loop.index0 }}/participated">{{ "✅" if m.participated else "" }}</a></td>
