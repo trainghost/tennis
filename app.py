@@ -244,8 +244,6 @@ def generate_match():
     remain2_filtered = females2 + males2
     remain2_filtered = [m for m in remain2_filtered if m["name"] not in used_names]
 
-    print("매칭 2 남은 인원 수:", len(remain2_filtered), file=sys.stderr)
-
     if len(females2) >= 4:
         mixed = [m for m in remain2_filtered if m["gender"] == "남"]
         females = [m for m in remain2_filtered if m["gender"] == "여"]
@@ -288,6 +286,9 @@ def generate_match():
         "title": "매칭 2 (06:35 ~ 07:00)",
         "courts": courts2
     })
+
+    print("매칭 2 남은 인원 수:", len(remain2_filtered), file=sys.stderr)
+    print("매칭 2 코트 수:", len(courts2), file=sys.stderr)
 
     return render_template("matches.html", matches=matches)
     
