@@ -282,13 +282,15 @@ def generate_match():
             courts2.append((f"{i}번 코트", A, B))
             used_names.update(m["name"] for m in A + B)
 
+    import sys
+    print("매칭 2 생성된 코트 수:", len(courts2), file=sys.stderr)
+    print("매칭 2 남은 인원 수:", len(remain2_filtered), file=sys.stderr)
+    print("매칭 2 코트 수:", len(courts2), file=sys.stderr)
+
     matches.append({
         "title": "매칭 2 (06:35 ~ 07:00)",
         "courts": courts2
     })
-
-    print("매칭 2 남은 인원 수:", len(remain2_filtered), file=sys.stderr)
-    print("매칭 2 코트 수:", len(courts2), file=sys.stderr)
 
     return render_template("matches.html", matches=matches)
     
