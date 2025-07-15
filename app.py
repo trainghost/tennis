@@ -149,28 +149,70 @@ def update_rank(idx):
 
 @app.route("/generate")
 def generate_match():
-    import itertools
-    members = [m for m in load_data() if m["participated"]]
-    def best_match(members):
+    members = [m for m in load_data() if m.get("participated")]
+
+    # 늦게 시작한 사람 제외 (기능이 있다면 적용)
+    for m in members:
+        if "late" not in m:
+            m["late"] = False  # 기본값 설정
+
+    courts = []
+    used_names = set()
+
+    def best_team_split(players):
+        import itertools
         min_diff = float("inf")
         best = ([], [])
-        for comb in itertools.combinations(members, 4):
-            for teamA in itertools.combinations(comb, 2):
-                teamB = [m for m in comb if m not in teamA]
-                diff = abs(sum(m["rank"] for m in teamA) - sum(m["rank"] for m in teamB))
-                if diff < min_diff:
-                    min_diff = diff
-                    best = (list(teamA), list(teamB))
+        for teamA in itertools.combinations(players, 2):
+            teamB = [p for p in players if p not in teamA]
+            diff = abs(sum(p["rank"] for p in teamA) - sum(p["rank"] for p in teamB))
+            if diff < min_diff:
+                min_diff = diff
+                best = (list(teamA), teamB)
         return best
-    courts = []
-    used = set()
-    for i in range(3, 6):
-        remain = [m for m in members if m["name"] not in used]
-        if len(remain) < 4: break
-        A, B = best_match(remain)
-        used.update(m["name"] for m in A + B)
-        courts.append((f"{i}번 코트", A, B))
+
+    # 3번 코트 (여자 우선 or 혼합)
+    females = [m for m in members if m["gender"] == "여" and not m.get("late") and m["name"] not in used_names]
+
+    if len(females) >= 4:
+        females = sorted(females, key=lambda x: x["rank"])
+        selected = females[:4]
+    elif 2 <= len(females) <= 3:
+        others = [m for m in members if m["name"] not in used_names and m not in females and not m.get("late")]
+        selected = (females + others)[:4]
+    else:
+        selected = [m for m in members if m["name"] not in used_names and not m.get("late")] [:4]
+
+    if len(selected) == 4:
+        A, B = best_team_split(selected)
+        courts.append(("3번 코트", A, B))
+        used_names.update(m["name"] for m in A + B)
+
+    # 남자만 대상
+    males = [m for m in members if m["gender"] == "남" and not m.get("late") and m["name"] not in used_names]
+    males = sorted(males, key=lambda x: x["rank"])
+
+    if len(males) >= 8:
+        selected = males[:8]
+    else:
+        selected = males
+
+    if len(selected) >= 4:
+        # 4번 코트
+        teamA = [selected[0], selected[-1]]
+        teamB = [selected[1], selected[-2]]
+        courts.append(("4번 코트", teamA, teamB))
+        used_names.update(m["name"] for m in teamA + teamB)
+
+    remain = [m for m in males if m["name"] not in used_names]
+    if len(remain) >= 4:
+        teamA = [remain[0], remain[-1]]
+        teamB = [remain[1], remain[-2]]
+        courts.append(("5번 코트", teamA, teamB))
+        used_names.update(m["name"] for m in teamA + teamB)
+
     return render_template("matches.html", courts=courts)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
