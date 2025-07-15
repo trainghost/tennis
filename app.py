@@ -229,67 +229,6 @@ def generate_match():
         "courts": courts1
     })
 
-    # 매칭 2 (06:35 ~ 07:00)
-    courts2 = []
-
-    remain2 = [m for m in members if m["name"] not in used_names]
-    females2 = [m for m in remain2 if m["gender"] == "여"]
-    males2 = [m for m in remain2 if m["gender"] == "남"]
-
-    # 남자 중 순위 낮은 2명 제외 (used_names 반영 후)
-    males2.sort(key=lambda x: x["rank"], reverse=True)
-    available_males = [m for m in males2 if m["name"] not in used_names]
-    available_females = [m for m in females2 if m["name"] not in used_names]
-
-    # 하위 2명 제외
-    available_males = available_males[2:] if len(available_males) >= 2 else []
-
-    remain2_filtered = available_females + available_males
-
-    if len(available_females) >= 4:
-        for i in range(3, 5):
-            candidates = [m for m in remain2_filtered if m["name"] not in used_names]
-            if len(candidates) < 4: break
-            A, B = best_match(candidates)
-            courts2.append((f"{i}번 코트", A, B))
-            used_names.update(m["name"] for m in A + B)
-
-        rest = [m for m in remain2_filtered if m["name"] not in used_names]
-        if len(rest) >= 4:
-            A, B = best_match(rest)
-            courts2.append(("5번 코트", A, B))
-            used_names.update(m["name"] for m in A + B)
-
-    elif 2 <= len(available_females) <= 3:
-        mixed = available_males + available_females
-        A, B = best_match([m for m in mixed if m["name"] not in used_names])
-        courts2.append(("3번 코트", A, B))
-        used_names.update(m["name"] for m in A + B)
-
-        for i in range(4, 6):
-            candidates = [m for m in remain2_filtered if m["name"] not in used_names]
-            if len(candidates) < 4: break
-            A, B = best_match(candidates)
-            courts2.append((f"{i}번 코트", A, B))
-            used_names.update(m["name"] for m in A + B)
-
-    else:
-        for i in range(3, 6):
-            candidates = [m for m in remain2_filtered if m["name"] not in used_names]
-            if len(candidates) < 4: break
-            A, B = best_match(candidates)
-            courts2.append((f"{i}번 코트", A, B))
-            used_names.update(m["name"] for m in A + B)
-
-    matches.append({
-        "title": "매칭 2 (06:35 ~ 07:00)",
-        "courts": courts2
-    })
-
-    print("✅ 매칭 2 - 최종 조합 인원 수:", len(remain2_filtered), file=sys.stderr)
-    print("✅ 매칭 2 - 사용가능 여자 수:", len(females2), file=sys.stderr)
-    print("✅ 매칭 2 - 사용가능 남자 수 (하위2제외):", len(males2), file=sys.stderr)
-
     return render_template("matches.html", matches=matches)
 
 
