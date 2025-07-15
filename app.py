@@ -23,6 +23,8 @@ def save_data(members):
 @app.route("/", methods=["GET", "POST"])
 def index():
     members = load_data()
+    for m in members:
+        m.setdefault("late", False)
 
     if request.method == "POST":
         name = request.form["name"].strip()
@@ -50,6 +52,11 @@ def index():
         members.sort(key=lambda x: not x.get("participated", False))  # 참여한 사람 먼저
     elif sort == "participated_last":
         members.sort(key=lambda x: x.get("participated", False))  # 참여 안 한 사람 먼저
+    elif sort == "late_first":
+        members.sort(key=lambda x: not x.get("late", False))
+    elif sort == "late_last":
+        members.sort(key=lambda x: x.get("late", False))
+
 
     return render_template("index.html", members=members, sort=sort)
 
@@ -58,9 +65,9 @@ def index():
 @app.route("/toggle/<int:idx>/<key>")
 def toggle(idx, key):
     members = load_data()
-    if key in ["tuesday", "thursday", "participated"]:
+    if key in ["tuesday", "thursday", "participated", "late"]:
         members[idx][key] = not members[idx].get(key, False)
-    save_data(members)
+        save_data(members)
     return redirect(url_for("index"))
 
 @app.route("/delete/<int:idx>")
