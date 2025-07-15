@@ -1,4 +1,3 @@
-<!-- templates/matches.html -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,10 +10,15 @@
     <h2>{{ match.title }}</h2>
     <ul>
       {% for court, A, B in match.courts %}
-        <li>{{ court }}:
-          {{ A[0]["name"] }}({{ A[0]["rank"] }}), {{ A[1]["name"] }}({{ A[1]["rank"] }})
-          vs
-          {{ B[0]["name"] }}({{ B[0]["rank"] }}), {{ B[1]["name"] }}({{ B[1]["rank"] }})
+        <li>
+          {{ court }}:
+          {% if A|length == 2 and B|length == 2 %}
+            {{ A[0]["name"] }}({{ A[0]["rank"] }}), {{ A[1]["name"] }}({{ A[1]["rank"] }})
+            vs
+            {{ B[0]["name"] }}({{ B[0]["rank"] }}), {{ B[1]["name"] }}({{ B[1]["rank"] }})
+          {% else %}
+            팀을 구성할 수 없습니다.
+          {% endif %}
         </li>
       {% endfor %}
     </ul>
