@@ -201,8 +201,7 @@ def generate_match():
     elif len(females) >= 2:
         others = [m for m in remain1 if m["name"] not in [f["name"] for f in females]]
         mixed_candidates = females + others
-        mixed_candidates = [m for m in mixed_candidates if m["name"] not in used_names]
-        A, B = best_match(mixed_candidates)
+        A, B = best_match([m for m in mixed_candidates if m["name"] not in used_names])
     else:
         candidates = [m for m in remain1 if m["name"] not in used_names]
         A, B = best_match(candidates)
@@ -233,56 +232,51 @@ def generate_match():
     # 매칭 2 (06:35 ~ 07:00)
     courts2 = []
     remain2 = [m for m in members if m["name"] not in used_names]
+    females2 = [m for m in remain2 if m["gender"] == "여"]
+    males2 = [m for m in remain2 if m["gender"] == "남"]
 
-    females2 = [m for m in remain2 if m["gender"] == "여" and m["name"] not in used_names]
-    males2 = [m for m in remain2 if m["gender"] == "남" and m["name"] not in used_names]
-
-    # 남자 중 순위 낮은 2명 제외 (여기서 적용!)
+    # 남자 중 순위 낮은 2명 제외 (used_names 반영 후)
     males2.sort(key=lambda x: x["rank"], reverse=True)
-    males2 = males2[2:] if len(males2) >= 2 else []
+    available_males = [m for m in males2 if m["name"] not in used_names]
+    available_females = [m for m in females2 if m["name"] not in used_names]
 
-    remain2_filtered = females2 + males2
+    # 하위 2명 제외
+    available_males = available_males[2:] if len(available_males) >= 2 else []
 
-    if len(females2) >= 4:
-        # 3번, 4번: 혼복
+    remain2_filtered = available_females + available_males
+
+    if len(available_females) >= 4:
         for i in range(3, 5):
-            pairs = [m for m in remain2_filtered if m["name"] not in used_names]
-            if len(pairs) < 4:
-                break
-            A, B = best_match(pairs)
+            candidates = [m for m in remain2_filtered if m["name"] not in used_names]
+            if len(candidates) < 4: break
+            A, B = best_match(candidates)
             courts2.append((f"{i}번 코트", A, B))
             used_names.update(m["name"] for m in A + B)
 
-        # 5번: 남녀 무관 복식
         rest = [m for m in remain2_filtered if m["name"] not in used_names]
         if len(rest) >= 4:
             A, B = best_match(rest)
             courts2.append(("5번 코트", A, B))
             used_names.update(m["name"] for m in A + B)
 
-    elif 2 <= len(females2) <= 3:
-        # 3번: 혼복
-        mixed = [m for m in remain2_filtered if m["gender"] == "남"] + females2
-        A, B = best_match(mixed)
+    elif 2 <= len(available_females) <= 3:
+        mixed = available_males + available_females
+        A, B = best_match([m for m in mixed if m["name"] not in used_names])
         courts2.append(("3번 코트", A, B))
         used_names.update(m["name"] for m in A + B)
 
-        # 4, 5번: 남녀 무관 복식
         for i in range(4, 6):
-            pairs = [m for m in remain2_filtered if m["name"] not in used_names]
-            if len(pairs) < 4:
-                break
-            A, B = best_match(pairs)
+            candidates = [m for m in remain2_filtered if m["name"] not in used_names]
+            if len(candidates) < 4: break
+            A, B = best_match(candidates)
             courts2.append((f"{i}번 코트", A, B))
             used_names.update(m["name"] for m in A + B)
 
     else:
-        # 3~5번: 전부 남녀 무관 복식
         for i in range(3, 6):
-            pairs = [m for m in remain2_filtered if m["name"] not in used_names]
-            if len(pairs) < 4:
-                break
-            A, B = best_match(pairs)
+            candidates = [m for m in remain2_filtered if m["name"] not in used_names]
+            if len(candidates) < 4: break
+            A, B = best_match(candidates)
             courts2.append((f"{i}번 코트", A, B))
             used_names.update(m["name"] for m in A + B)
 
@@ -292,6 +286,7 @@ def generate_match():
     })
 
     return render_template("matches.html", matches=matches)
+
 
     
 
