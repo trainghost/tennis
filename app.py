@@ -190,47 +190,56 @@ def generate_match():
     used_names = set()
     matches = []
 
-    # 매칭 1 (06:10 ~ 06:35)
-    courts1 = []
-    remain1 = [m for m in members if not m.get("late")]
+    def make_match(title, available_members, used_names):
+        courts = []
 
-    # 3번 코트: 여자 경기
-    females = [m for m in remain1 if m["gender"] == "여"]
-    if len(females) >= 4:
-        A, B = best_match(females)
-    elif len(females) >= 2:
-        others = [m for m in remain1 if m["name"] not in [f["name"] for f in females]]
-        mixed_candidates = females + others
-        A, B = best_match([m for m in mixed_candidates if m["name"] not in used_names])
-    else:
-        candidates = [m for m in remain1 if m["name"] not in used_names]
-        A, B = best_match(candidates)
-    courts1.append(("3번 코트", A, B))
-    used_names.update(m["name"] for m in A + B)
+        remain = [m for m in available_members if m["name"] not in used_names and not m.get("late")]
 
-    # 4, 5번 코트: 남자 경기
-    males = [m for m in remain1 if m["gender"] == "남" and m["name"] not in used_names]
-    males.sort(key=lambda x: x["rank"])
+        # 3번 코트: 여자 경기
+        females = [m for m in remain if m["gender"] == "여"]
+        if len(females) >= 4:
+            A, B = best_match(females)
+        elif len(females) >= 2:
+            others = [m for m in remain if m["name"] not in [f["name"] for f in females]]
+            mixed_candidates = females + others
+            A, B = best_match([m for m in mixed_candidates if m["name"] not in used_names])
+        else:
+            candidates = [m for m in remain if m["name"] not in used_names]
+            A, B = best_match(candidates)
+        courts.append(("3번 코트", A, B))
+        used_names.update(m["name"] for m in A + B)
 
-    if len(males) >= 8:
-        A1 = [males[0], males[-1]]
-        B1 = [males[1], males[-2]]
-        courts1.append(("4번 코트", A1, B1))
-        used_names.update(m["name"] for m in A1 + B1)
+        # 4, 5번 코트: 남자 경기
+        males = [m for m in remain if m["gender"] == "남" and m["name"] not in used_names]
+        males.sort(key=lambda x: x["rank"])
 
-        remain_males = [m for m in males if m["name"] not in used_names]
-        A2 = [remain_males[0], remain_males[-1]]
-        B2 = [remain_males[1], remain_males[-2]]
-        courts1.append(("5번 코트", A2, B2))
-        used_names.update(m["name"] for m in A2 + B2)
+        if len(males) >= 8:
+            A1 = [males[0], males[-1]]
+            B1 = [males[1], males[-2]]
+            courts.append(("4번 코트", A1, B1))
+            used_names.update(m["name"] for m in A1 + B1)
 
-    matches.append({
-        "title": "매칭 1 (06:10 ~ 06:35)",
-        "courts": courts1
-    })
+            remain_males = [m for m in males if m["name"] not in used_names]
+            if len(remain_males) >= 4:
+                A2 = [remain_males[0], remain_males[-1]]
+                B2 = [remain_males[1], remain_males[-2]]
+                courts.append(("5번 코트", A2, B2))
+                used_names.update(m["name"] for m in A2 + B2)
+
+        return {
+            "title": title,
+            "courts": courts
+        }
+
+    # 매칭 1
+    match1 = make_match("매칭 1 (06:10 ~ 06:35)", members, used_names)
+    matches.append(match1)
+
+    # 매칭 2
+    match2 = make_match("매칭 2 (06:37 ~ 07:00)", members, used_names)
+    matches.append(match2)
 
     return render_template("matches.html", matches=matches)
-
 
 
 
