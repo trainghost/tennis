@@ -2,6 +2,7 @@ import os
 import json 
 import openpyxl
 from flask import Flask, request, redirect, render_template, jsonify, url_for
+from itertools import combinations
 
 
 app = Flask(__name__)
@@ -19,6 +20,22 @@ def load_data():
 def save_data(members):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(members, f, indent=2, ensure_ascii=False)
+
+def save_data(data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+def best_match(members):
+    min_diff = float("inf")
+    best = ([], [])
+    for comb in combinations(members, 4):
+        for teamA in combinations(comb, 2):
+            teamB = [m for m in comb if m not in teamA]
+            diff = abs(sum(m["rank"] for m in teamA) - sum(m["rank"] for m in teamB))
+            if diff < min_diff:
+                min_diff = diff
+                best = (list(teamA), list(teamB))
+    return best
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -165,62 +182,71 @@ def update_rank(idx):
 
 @app.route("/generate")
 def generate_match():
-    members = load_data()
+    members = [m for m in load_data() if m.get("participated")]
+    for m in members:
+        m.setdefault("late", False)
 
-    courts = []
     used_names = set()
+    matches = []
 
-    # 1. 3번 코트 - 여자 중심
-    female = [m for m in members if m["gender"] == "여" and m.get("participated") and not m.get("late", False)]
+    # 매칭 1 (06:10 ~ 06:35)
+    courts1 = []
+    remain1 = [m for m in members if not m.get("late")]
 
-    if len(female) >= 4:
-        # 여자만 4명 이상이면 여자끼리 구성
-        female_sorted = sorted(female, key=lambda x: x["rank"])
-        teamA = [female_sorted[0], female_sorted[-1]]
-        teamB = [female_sorted[1], female_sorted[-2]]
-    elif 2 <= len(female) <= 3:
-        # 여자 + 남자 혼합, 성별 다르게, 순위 비슷하게
-        others = [m for m in members if m.get("participated") and not m.get("late", False) and m["name"] not in [f["name"] for f in female]]
-        candidates = female + others
-        candidates = sorted(candidates, key=lambda x: x["rank"])
-        teamA, teamB = [], []
-        for c in candidates:
-            if len(teamA) < 2:
-                if not teamA or teamA[0]["gender"] != c["gender"]:
-                    teamA.append(c)
-            elif len(teamB) < 2:
-                if not teamB or teamB[0]["gender"] != c["gender"]:
-                    teamB.append(c)
-            if len(teamA) == 2 and len(teamB) == 2:
-                break
+    # 3번 코트: 여자 경기
+    females = [m for m in remain1 if m["gender"] == "여"]
+    if len(females) >= 4:
+        A, B = best_match(females)
+    elif len(females) >= 2:
+        others = [m for m in remain1 if m["name"] not in [f["name"] for f in females]]
+        mixed_candidates = females + others
+        mixed_candidates = [m for m in mixed_candidates if m["name"] not in used_names]
+        A, B = best_match(mixed_candidates)
     else:
-        # 여자 1명 이하 → 전체 참여자 중에서 4명 선택 (성별 무관)
-        candidates = [m for m in members if m.get("participated") and not m.get("late", False)]
-        candidates = sorted(candidates, key=lambda x: x["rank"])
-        teamA = [candidates[0], candidates[-1]]
-        teamB = [candidates[1], candidates[-2]]
+        candidates = [m for m in remain1 if m["name"] not in used_names]
+        A, B = best_match(candidates)
+    courts1.append(("3번 코트", A, B))
+    used_names.update(m["name"] for m in A + B)
 
-    courts.append(("3번 코트", teamA, teamB))
-    used_names.update(m["name"] for m in teamA + teamB)
+    # 4, 5번 코트: 남자 경기
+    males = [m for m in remain1 if m["gender"] == "남" and m["name"] not in used_names]
+    males.sort(key=lambda x: x["rank"])
 
-    # 2. 4번, 5번 코트 - 남자 중심
-    male = [m for m in members if m["gender"] == "남" and m.get("participated") and not m.get("late", False)]
-    male = [m for m in male if m["name"] not in used_names]
-    male_sorted = sorted(male, key=lambda x: x["rank"])
+    if len(males) >= 8:
+        A1 = [males[0], males[-1]]
+        B1 = [males[1], males[-2]]
+        courts1.append(("4번 코트", A1, B1))
+        used_names.update(m["name"] for m in A1 + B1)
 
-    if len(male_sorted) >= 4:
-        A = [male_sorted[0], male_sorted[-1]]
-        B = [male_sorted[1], male_sorted[-2]]
-        courts.append(("4번 코트", A, B))
+        remain_males = [m for m in males if m["name"] not in used_names]
+        A2 = [remain_males[0], remain_males[-1]]
+        B2 = [remain_males[1], remain_males[-2]]
+        courts1.append(("5번 코트", A2, B2))
+        used_names.update(m["name"] for m in A2 + B2)
+
+    matches.append({
+        "title": "매칭 1 (06:10 ~ 06:35)",
+        "courts": courts1
+    })
+
+    # 매칭 2 (06:35 ~ 07:00) - 기존 단순 best_match
+    courts2 = []
+    remain2 = [m for m in members if m["name"] not in used_names]
+    for court_num in [3, 4, 5]:
+        candidates = [m for m in remain2 if m["name"] not in used_names]
+        if len(candidates) < 4:
+            break
+        A, B = best_match(candidates)
+        courts2.append((f"{court_num}번 코트", A, B))
         used_names.update(m["name"] for m in A + B)
 
-    remain = [m for m in male_sorted if m["name"] not in used_names]
-    if len(remain) >= 4:
-        A = [remain[0], remain[-1]]
-        B = [remain[1], remain[-2]]
-        courts.append(("5번 코트", A, B))
+    matches.append({
+        "title": "매칭 2 (06:35 ~ 07:00)",
+        "courts": courts2
+    })
 
-    return render_template("matches.html", courts=courts)
+    return render_template("matches.html", matches=matches)
+
 
 
 
