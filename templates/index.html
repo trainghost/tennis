@@ -63,10 +63,10 @@
                             <button type="submit" class="btn btn-sm btn-primary">저장</button>
                         </form>
                     </td>
-                    <td><a href="/toggle/{{ loop.index0 }}/tuesday">{{ "✅" if m.tuesday else "" }}</a></td>
-                    <td><a href="/toggle/{{ loop.index0 }}/thursday">{{ "✅" if m.thursday else "" }}</a></td>
+                    <td><a href="/toggle/{{ loop.index0 }}/tuesday">{{ "✅" if m.tuesday else "❌" }}</a></td>
+                    <td><a href="/toggle/{{ loop.index0 }}/thursday">{{ "✅" if m.thursday else "❌" }}</a></td>
                     <td><input type="checkbox" name="participated_{{ loop.index0 }}" {% if m.participated %}checked{% endif %}></td>
-                    <td><a href="/toggle/{{ loop.index0 }}/late">{{ "✅" if m.get('late') else "" }}</a></td>
+                    <td><a href="/toggle/{{ loop.index0 }}/late">{{ "✅" if m.get('late') else "❌" }}</a></td>
                     <td><a href="/delete/{{ loop.index0 }}" class="btn btn-sm btn-danger">삭제</a></td>
                 </tr>
                 {% endfor %}
