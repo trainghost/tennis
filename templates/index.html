@@ -26,6 +26,12 @@
           <input type="file" name="file" accept=".xlsx">
           <button type="submit">업로드</button>
     </form>
+
+    <form action="{{ url_for('update_rank', idx=loop.index0) }}" method="post" style="display:inline;">
+      <input type="number" name="rank" value="{{ member.rank }}" style="width: 50px;" />
+      <button type="submit">저장</button>
+    </form>
+
     
     <table class="table table-bordered table-hover text-center">
         <thead class="table-light"><tr><th>#</th><th>이름</th><th>성별</th><th>순위</th><th>화</th><th>목</th><th>참여</th><th>삭제</th></tr></thead>
