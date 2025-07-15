@@ -73,10 +73,11 @@ def toggle(idx, key):
 @app.route("/toggle/<int:idx>/<field>")
 def toggle_field(idx, field):
     members = load_data()
-    if 0 <= idx < len(members) and field in members[idx]:
-        members[idx][field] = not members[idx][field]
+    if 0 <= idx < len(members) and field in ["tuesday", "thursday", "participated", "late"]:  # ← 여기 "late" 포함되어야 함
+        members[idx][field] = not members[idx].get(field, False)
         save_data(members)
     return redirect(url_for("index"))
+
 
 @app.route("/delete/<int:idx>")
 def delete(idx):
