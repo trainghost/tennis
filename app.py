@@ -192,7 +192,8 @@ def generate_match():
 
     def make_match(title, candidate_pool, used_names, ignore_used=False):
         courts = []
-
+        local_used = set()  # 현재 매칭에서 이미 배정된 사람들
+        
         # used_names를 무시할지 여부에 따라 필터링 기준을 달리함
         if ignore_used:
             remain = [m for m in candidate_pool if not m.get("late")]
@@ -215,11 +216,11 @@ def generate_match():
         used_names.update(m["name"] for m in A + B)
 
         # 3. 남자 코트 구성
-        # 3. 남자 코트 구성
         if ignore_used:
-            males = [m for m in remain if m["gender"] == "남"]
+            males = [m for m in remain if m["gender"] == "남" and m["name"] not in local_used]
         else:
-            males = [m for m in remain if m["gender"] == "남" and m["name"] not in used_names]
+            males = [m for m in remain if m["gender"] == "남" and m["name"] not in used_names and m["name"] not in local_used]
+
 
         males.sort(key=lambda x: x["rank"])
 
@@ -228,7 +229,8 @@ def generate_match():
             B1 = [males[1], males[-2]]
             courts.append(("4번 코트", A1, B1))
             used_names.update(m["name"] for m in A1 + B1)
-
+            local_used.update(m["name"] for m in A1 + B1)
+            
             if ignore_used:
                 remain_males = males[:]
             else:
@@ -239,6 +241,7 @@ def generate_match():
                 B2 = [remain_males[1], remain_males[-2]]
                 courts.append(("5번 코트", A2, B2))
                 used_names.update(m["name"] for m in A2 + B2)
+                local_used.update(m["name"] for m in A2 + B2)
 
         return {
             "title": title,
