@@ -43,45 +43,25 @@ def index():
 
     return render_template('index.html', names=ranked_names)
 
-@app.route('/submit', methods=['POST'])
-def submit_attendance():
+@app.route('/get_participants', methods=['GET'])
+def get_participants():
     group1 = []
-    group2 = []
-    group3 = []
     attendees = []
 
-    # 모든 참석 데이터 추출
+    # 모든 참석 데이터 추출 (예시 데이터)
     for i in range(1, 100):  # 최대 100명까지 탐색
-        key = f'attendance_{i}[]'
-        if key in request.form:
-            attendance_values = request.form.getlist(key)
-            name = f"Person {i}"  # 이름을 생성해 둔 예시 (실제 코드에서는 이름을 사용)
-            status = {
-                "rank": i,
-                "status": attendance_values
-            }
-            attendees.append(status)
+        name = f"Person {i}"
+        status = []
 
-    # 그룹 1: 참가만 체크한 사람 또는 참가+일퇴 체크한 사람을 추가
-    for attendee in attendees:
-        status = attendee['status']
-        rank = attendee['rank']
+        if i % 2 == 0:  # 예시로 참가한 사람을 만들어 보겠습니다.
+            status.append("참가")
 
-        # 참가만 체크한 사람을 그룹 1에 추가
-        if "참가" in status and "일퇴" not in status and "늦참" not in status:
-            group1.append(attendee)
-        
-        # 참가+일퇴 체크한 사람을 그룹 1에 추가
-        elif "참가" in status and "일퇴" in status and "늦참" not in status:
-            group1.append(attendee)
+        if "참가" in status and "늦참" not in status:  # 참가한 사람을 그룹 1에 추가
+            group1.append({"name": name, "rank": i})
 
-    # 참가한 사람을 출력 (디버깅용)
-    print("1그룹에 포함된 사람들:")
-    for participant in group1:
-        print(f"Rank: {participant['rank']}, Status: {participant['status']}")
-
-    # 결과를 템플릿에 전달
-    return render_template('submitted.html', participants=group1)
+    return jsonify({
+        'participants': group1  # 참가자 목록을 반환
+    })
 
 
 
