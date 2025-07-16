@@ -44,7 +44,18 @@
     </form>
     {% endif %}
 
-    
+    <!-- 7x10 테이블 추가 -->
+    <h2>7x10 테이블</h2>
+    <table>
+        {% for i in range(7) %}
+        <tr>
+            {% for j in range(10) %}
+            <td>{{ i * 10 + j + 1 }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+
     <script>
         // 폼 제출 전에 체크박스를 확인하는 JavaScript 함수
         function validateForm() {
