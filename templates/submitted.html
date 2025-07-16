@@ -1,10 +1,48 @@
-<h2>참가 여부 결과</h2>
-<table border="1">
-    <tr><th>순위</th><th>선택한 항목</th></tr>
-    {% for item in results %}
-    <tr>
-        <td>{{ item.rank }}</td>
-        <td>{{ item.status | join(', ') }}</td>
-    </tr>
-    {% endfor %}
-</table>
+<!doctype html>
+<html>
+<head>
+    <title>결과</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table, th, td { border: 1px solid black; }
+        th, td { padding: 10px; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>참가자 그룹 결과</h1>
+
+    <h2>1그룹</h2>
+    <table>
+        <tr><th>순위</th><th>이름</th></tr>
+        {% for person in results.group1 %}
+        <tr>
+            <td>{{ person.rank }}</td>
+            <td>{{ person.name }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>2그룹</h2>
+    <table>
+        <tr><th>순위</th><th>이름</th></tr>
+        {% for person in results.group2 %}
+        <tr>
+            <td>{{ person.rank }}</td>
+            <td>{{ person.name }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>3그룹</h2>
+    <table>
+        <tr><th>순위</th><th>이름</th></tr>
+        {% for person in results.group3 %}
+        <tr>
+            <td>{{ person.rank }}</td>
+            <td>{{ person.name }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
