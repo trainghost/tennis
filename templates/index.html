@@ -14,15 +14,21 @@
         <button type="submit">업로드</button>
     </form>
 
-    {% if names %}
-    <div class="name-list">
-        <h2>회원 명단</h2>
-        <ul>
-            {% for name in names %}
-            <li>{{ name }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
+{% if names %}
+<div class="name-list">
+    <h2>회원 명단</h2>
+    <table border="1" cellpadding="5">
+        <tr><th>순위</th><th>이름</th><th>성별</th></tr>
+        {% for person in names %}
+        <tr>
+            <td>{{ person.rank }}</td>
+            <td>{{ person.name }}</td>
+            <td>{{ person.gender }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
 </body>
 </html>
