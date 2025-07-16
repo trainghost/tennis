@@ -9,6 +9,24 @@ UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+@app.route('/submit', methods=['POST'])
+def submit_attendance():
+    submitted_data = []
+    total = int(request.form.get("total_names", 0))  # 나중에 총 이름 수를 같이 보내면 더 안전
+
+    # 예시: names 리스트를 세션이나 전역변수로 유지했다면 여기에 그걸 반복
+    for i in range(1, 100):  # 최대 100명 가정. 실제 구현에서는 세션 또는 데이터 전달로 처리
+        name_key = f"attendance_{i}"
+        if name_key in request.form:
+            attendance = request.form[name_key]
+            submitted_data.append({
+                "rank": i,
+                "attendance": attendance
+            })
+
+    # 이후 제출된 데이터 처리 (DB 저장, 출력 등)
+    return render_template('submitted.html', results=submitted_data)
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     ranked_names = []
