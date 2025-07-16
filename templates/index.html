@@ -14,6 +14,39 @@
         <button type="submit">업로드</button>
     </form>
 
+    <form method="post" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".xlsx">
+    <input type="submit" value="업로드">
+</form>
+
+{% if names %}
+<form method="post" action="/submit">
+    <h2>결과</h2>
+    <table border="1">
+        <tr><th>순위</th><th>이름</th><th>성별</th><th>참가 여부</th></tr>
+        {% for person in names %}
+        <tr>
+            <td>{{ person.rank }}</td>
+            <td>{{ person.name }}</td>
+            <td>{{ person.gender }}</td>
+            <td>
+                <input type="radio" name="attendance_{{ person.rank }}" value="참가" required> 참가
+                <input type="radio" name="attendance_{{ person.rank }}" value="불참"> 불참
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <input type="submit" value="참가 여부 제출">
+</form>
+{% endif %}
+
+
+
+
+
+    
+
 {% if names %}
 <div class="name-list">
     <h2>회원 명단</h2>
