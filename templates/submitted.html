@@ -15,7 +15,7 @@
     <h2>1그룹</h2>
     <table>
         <tr><th>순위</th><th>이름</th></tr>
-        {% for person in results.group1 %}
+        {% for person in participants.group1 %}
         <tr>
             <td>{{ person.rank }}</td>
             <td>{{ person.name }}</td>
@@ -26,7 +26,7 @@
     <h2>2그룹</h2>
     <table>
         <tr><th>순위</th><th>이름</th></tr>
-        {% for person in results.group2 %}
+        {% for person in participants.group2 %}
         <tr>
             <td>{{ person.rank }}</td>
             <td>{{ person.name }}</td>
@@ -37,7 +37,7 @@
     <h2>3그룹</h2>
     <table>
         <tr><th>순위</th><th>이름</th></tr>
-        {% for person in results.group3 %}
+        {% for person in participants.group3 %}
         <tr>
             <td>{{ person.rank }}</td>
             <td>{{ person.name }}</td>
