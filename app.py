@@ -190,11 +190,15 @@ def generate_match():
     used_names = set()
     matches = []
 
-    def make_match(title, candidate_pool, used_names):
-        courts = []
+    def make_match(title, candidate_pool, used_names, ignore_used=False):
+    courts = []
 
-        # 1. 사용된 사람 제외하고, 지각하지 않은 사람만
+    # used_names를 무시할지 여부에 따라 필터링 기준을 달리함
+    if ignore_used:
+        remain = [m for m in candidate_pool if not m.get("late")]
+    else:
         remain = [m for m in candidate_pool if m["name"] not in used_names and not m.get("late")]
+
 
         # 2. 여자 코트 구성
         females = [m for m in remain if m["gender"] == "여"]
@@ -251,7 +255,7 @@ def generate_match():
     match2_candidates = not_used + fallback
 
         # 매칭 2
-    match2 = make_match("매칭 2 (06:37 ~ 07:00)", match2_candidates, used_names)
+    match2 = make_match("매칭 2 (06:37 ~ 07:00)", match2_candidates, used_names, ignore_used=True)
     matches.append(match2)
 
 
