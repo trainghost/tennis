@@ -10,22 +10,6 @@ UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-@app.route('/submit', methods=['POST'])
-def submit_attendance():
-    results = []
-
-    for i in range(1, 100):  # 최대 100명까지 탐색
-        key = f'attendance_{i}[]'
-        if key in request.form:
-            attendance_values = request.form.getlist(key)
-            results.append({
-                "rank": i,
-                "status": attendance_values  # 참가, 일퇴, 늦참 등이 들어 있는 리스트
-            })
-
-    return render_template('submitted.html', results=results)
-
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     ranked_names = []
