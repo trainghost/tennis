@@ -215,7 +215,12 @@ def generate_match():
         used_names.update(m["name"] for m in A + B)
 
         # 3. 남자 코트 구성
-        males = [m for m in remain if m["gender"] == "남" and m["name"] not in used_names]
+        # 3. 남자 코트 구성
+        if ignore_used:
+            males = [m for m in remain if m["gender"] == "남"]
+        else:
+            males = [m for m in remain if m["gender"] == "남" and m["name"] not in used_names]
+
         males.sort(key=lambda x: x["rank"])
 
         if len(males) >= 8:
@@ -224,7 +229,11 @@ def generate_match():
             courts.append(("4번 코트", A1, B1))
             used_names.update(m["name"] for m in A1 + B1)
 
-            remain_males = [m for m in males if m["name"] not in used_names]
+            if ignore_used:
+                remain_males = males[:]
+            else:
+                remain_males = [m for m in males if m["name"] not in used_names]
+
             if len(remain_males) >= 4:
                 A2 = [remain_males[0], remain_males[-1]]
                 B2 = [remain_males[1], remain_males[-2]]
