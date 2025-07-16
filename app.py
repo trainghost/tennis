@@ -191,13 +191,13 @@ def generate_match():
     matches = []
 
     def make_match(title, candidate_pool, used_names, ignore_used=False):
-    courts = []
+        courts = []
 
-    # used_names를 무시할지 여부에 따라 필터링 기준을 달리함
-    if ignore_used:
-        remain = [m for m in candidate_pool if not m.get("late")]
-    else:
-        remain = [m for m in candidate_pool if m["name"] not in used_names and not m.get("late")]
+        # used_names를 무시할지 여부에 따라 필터링 기준을 달리함
+        if ignore_used:
+            remain = [m for m in candidate_pool if not m.get("late")]
+        else:
+            remain = [m for m in candidate_pool if m["name"] not in used_names and not m.get("late")]
 
 
         # 2. 여자 코트 구성
