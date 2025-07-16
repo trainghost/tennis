@@ -1,16 +1,28 @@
-<!DOCTYPE html>
-<html lang="ko">
+<!doctype html>
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>대진표</title>
-  <style>
-    body { font-family: sans-serif; white-space: pre-wrap; background: #f9f9f9; padding: 20px; }
-    h1 { color: #333; }
-    .match-box { background: white; border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
-  </style>
+    <title>회원 업로드</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .name-list { margin-top: 20px; }
+    </style>
 </head>
 <body>
-  <h1>대진표 결과</h1>
-  <div class="match-box">{{ match_text }}</div>
+    <h1>회원 엑셀 업로드</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".xlsx" required>
+        <button type="submit">업로드</button>
+    </form>
+
+    {% if names %}
+    <div class="name-list">
+        <h2>회원 명단</h2>
+        <ul>
+            {% for name in names %}
+            <li>{{ name }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 </body>
 </html>
