@@ -1,6 +1,8 @@
 <!doctype html>
-<html>
+<html lang="ko">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>회원 업로드</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; }
@@ -8,7 +10,9 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         table, th, td { border: 1px solid black; }
         th, td { padding: 10px; text-align: center; }
+        #participants-list { margin-top: 20px; }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQuery -->
 </head>
 <body>
     <h1>회원 엑셀 업로드</h1>
@@ -44,6 +48,15 @@
     </form>
     {% endif %}
 
+    <hr>
+
+    <h2>참가 여부 확인</h2>
+    <!-- 참가 버튼을 누르면 하단에 참가자 목록을 표시 -->
+    <button id="check-attendance" type="button">참가</button>
+
+    <div id="participants-list">
+        <!-- 참가자 목록이 여기에 표시됩니다. -->
+    </div>
 
     <script>
         // 폼 제출 전에 체크박스를 확인하는 JavaScript 함수
@@ -62,6 +75,30 @@
             }
             return true;
         }
+
+        // "참가" 버튼 클릭 시 AJAX 요청을 보내 참가자 목록을 표시
+        $(document).ready(function() {
+            $('#check-attendance').click(function() {
+                $.ajax({
+                    url: '/get_participants',  // 참가자 목록을 요청할 Flask 엔드포인트
+                    method: 'GET',  // GET 요청
+                    success: function(data) {
+                        // 받은 데이터로 하단에 참가자 목록을 갱신
+                        $('#participants-list').html('');
+                        if (data.participants.length > 0) {
+                            data.participants.forEach(function(person) {
+                                $('#participants-list').append('<p>' + person.name + ' (순위: ' + person.rank + ')</p>');
+                            });
+                        } else {
+                            $('#participants-list').append('<p>참가자가 없습니다.</p>');
+                        }
+                    },
+                    error: function() {
+                        alert('참가자 목록을 불러오는 데 실패했습니다.');
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>
