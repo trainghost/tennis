@@ -232,27 +232,28 @@ def generate_match():
             "courts": courts
         }
 
-    # 매칭 1: 참여자 중 지각하지 않은 인원 기준
+       # 매칭 1
     match1 = make_match("매칭 1 (06:10 ~ 06:35)", members, used_names)
     matches.append(match1)
 
-# ✅ 여기부터 디버깅 코드 추가
-print("\n=== 매칭 1에 사용된 사람 ===")
-print(used_names)
+        # 매칭 2 디버깅
+    print("\n=== 매칭 1에 사용된 사람 ===")
+    print(used_names)
 
-not_used = [m for m in members if m["name"] not in used_names]
-print("\n=== 매칭 2에서 우선 사용할 사람 (쉬는 사람) ===")
-print([m["name"] for m in not_used])
+    not_used = [m for m in members if m["name"] not in used_names]
+    print("\n=== 매칭 2에서 우선 사용할 사람 (쉬는 사람) ===")
+    print([m["name"] for m in not_used])
 
-fallback = [m for m in members if m["name"] in used_names]
-print("\n=== 매칭 2 보충용 후보 ===")
-print([m["name"] for m in fallback])
+    fallback = [m for m in members if m["name"] in used_names]
+    print("\n=== 매칭 2 보충용 후보 ===")
+    print([m["name"] for m in fallback])
 
-match2_candidates = not_used + fallback
-# ✅ 여기까지 디버깅 코드
+    match2_candidates = not_used + fallback
 
+        # 매칭 2
     match2 = make_match("매칭 2 (06:37 ~ 07:00)", match2_candidates, used_names)
     matches.append(match2)
+
 
     return render_template("matches.html", matches=matches)
 
