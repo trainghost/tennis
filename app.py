@@ -46,6 +46,8 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit_attendance():
     group1 = []
+    group2 = []
+    group3 = []
     attendees = []
 
     # 모든 참석 데이터 추출
@@ -60,16 +62,27 @@ def submit_attendance():
             }
             attendees.append(status)
 
-    # "참가" 체크한 사람들만 출력
-    participants = [attendee for attendee in attendees if "참가" in attendee['status']]
+    # 그룹 1: 참가만 체크한 사람 또는 참가+일퇴 체크한 사람을 추가
+    for attendee in attendees:
+        status = attendee['status']
+        rank = attendee['rank']
 
-    # 참가한 사람들을 출력 (디버깅용)
-    print("참가 체크한 사람들:")
-    for participant in participants:
+        # 참가만 체크한 사람을 그룹 1에 추가
+        if "참가" in status and "일퇴" not in status and "늦참" not in status:
+            group1.append(attendee)
+        
+        # 참가+일퇴 체크한 사람을 그룹 1에 추가
+        elif "참가" in status and "일퇴" in status and "늦참" not in status:
+            group1.append(attendee)
+
+    # 참가한 사람을 출력 (디버깅용)
+    print("1그룹에 포함된 사람들:")
+    for participant in group1:
         print(f"Rank: {participant['rank']}, Status: {participant['status']}")
 
     # 결과를 템플릿에 전달
-    return render_template('submitted.html', participants=participants)
+    return render_template('submitted.html', participants=group1)
+
 
 
 if __name__ == '__main__':
