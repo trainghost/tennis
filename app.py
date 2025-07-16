@@ -1,281 +1,142 @@
+from flask import Flask, render_template, request, redirect, url_for
+import json
+import itertools
 import os
-import json 
-import openpyxl
-from flask import Flask, request, redirect, render_template, jsonify, url_for
-from itertools import combinations
-import sys
-
 
 app = Flask(__name__)
-UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 DATA_FILE = "members_data.json"
 
-def load_data():
+def load_members():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, encoding="utf-8") as f:
             return json.load(f)
     return []
 
-def save_data(members):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(members, f, indent=2, ensure_ascii=False)
+def get_ranked_names(members):
+    return [f"{m['name']}({m['rank']})" for m in members]
 
-def save_data(data):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-def best_match(members):
-    min_diff = float("inf")
-    best = ([], [])
-    for comb in combinations(members, 4):
-        for teamA in combinations(comb, 2):
+def best_match_pairs(members):
+    min_diff = float('inf')
+    best_pair = ([], [])
+    for comb in itertools.combinations(members, 4):
+        for teamA in itertools.combinations(comb, 2):
             teamB = [m for m in comb if m not in teamA]
-            diff = abs(sum(m["rank"] for m in teamA) - sum(m["rank"] for m in teamB))
+            sumA = sum(m['rank'] for m in teamA)
+            sumB = sum(m['rank'] for m in teamB)
+            diff = abs(sumA - sumB)
             if diff < min_diff:
                 min_diff = diff
-                best = (list(teamA), list(teamB))
-    return best
+                best_pair = (list(teamA), list(teamB))
+    return best_pair
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    members = load_data()
-    for m in members:
-        m.setdefault("late", False)
-
-    if request.method == "POST":
-        name = request.form["name"].strip()
-        gender = request.form["gender"]
-        rank = int(request.form["rank"] or 0)
-        members.append({
-            "name": name,
-            "gender": gender,
-            "rank": rank,
-            "tuesday": False,
-            "thursday": False,
-            "participated": False
-        })
-        save_data(members)
-        return redirect(url_for("index"))
-
-    # GET 요청일 경우 정렬 적용
-    sort = request.args.get("sort")
-
-    if sort == "asc":
-        members.sort(key=lambda x: x["rank"])
-    elif sort == "desc":
-        members.sort(key=lambda x: x["rank"], reverse=True)
-    elif sort == "participated_first":
-        members.sort(key=lambda x: not x.get("participated", False))  # 참여한 사람 먼저
-    elif sort == "participated_last":
-        members.sort(key=lambda x: x.get("participated", False))  # 참여 안 한 사람 먼저
-    elif sort == "late_first":
-        members.sort(key=lambda x: not x.get("late", False))
-    elif sort == "late_last":
-        members.sort(key=lambda x: x.get("late", False))
-
-
-    return render_template("index.html", members=members, sort=sort)
-
-
-
-@app.route("/toggle/<int:idx>/<key>")
-def toggle(idx, key):
-    members = load_data()
-    if key in ["tuesday", "thursday", "participated", "late"]:
-        members[idx][key] = not members[idx].get(key, False)
-        save_data(members)
-    return redirect(url_for("index"))
-    
-@app.route("/toggle/<int:idx>/<field>")
-def toggle_field(idx, field):
-    members = load_data()
-    if 0 <= idx < len(members) and field in ["tuesday", "thursday", "participated", "late"]:  # ← 여기 "late" 포함되어야 함
-        members[idx][field] = not members[idx].get(field, False)
-        save_data(members)
-    return redirect(url_for("index"))
-
-
-@app.route("/delete/<int:idx>")
-def delete(idx):
-    members = load_data()
-    if 0 <= idx < len(members):
-        del members[idx]
-    save_data(members)
-    return redirect(url_for("index"))
-
-@app.route("/upload", methods=["POST"])
-def upload_excel():
-    file = request.files["file"]
-    if file and file.filename.endswith(".xlsx"):
-        wb = openpyxl.load_workbook(file)
-        sheet = wb.active
-
-        headers = [cell.value for cell in sheet[1]]
-        members = []
-
-        for row in sheet.iter_rows(min_row=2, values_only=True):
-            data = dict(zip(headers, row))
-            members.append({
-                "name": data.get("name", "").strip(),
-                "gender": data.get("gender", "").strip(),
-                "rank": int(data.get("rank", 0) or 0),
-                "tuesday": bool(data.get("tuesday")),
-                "thursday": bool(data.get("thursday")),
-                "participated": bool(data.get("participated"))
-            })
-
-        save_data(members)
-        return redirect(url_for("index"))
-
-    return "올바른 엑셀 파일(.xlsx)을 업로드하세요.", 400
-
-
-@app.route("/update_participation", methods=["POST"])
-def update_participation():
-    members = load_data()
-    for i, member in enumerate(members):
-        checkbox_name = f"participated_{i}"
-        member["participated"] = checkbox_name in request.form
-    save_data(members)
-    return redirect(url_for("index"))
-
-        
-@app.route("/update_rank/<int:idx>", methods=["POST"])
-def update_rank(idx):
-    members = load_data()
-    new_rank = int(request.form.get("rank", 0))
-    if 0 <= idx < len(members):
-        members[idx]["rank"] = new_rank
-        save_data(members)
-    return redirect(url_for("index"))
-
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-    file.save(filepath)
-
-    wb = openpyxl.load_workbook(filepath)
-    sheet = wb.active
-    new_members = []
-
-    for row in sheet.iter_rows(min_row=2, values_only=True):
-        if not row or not row[0]:
+def best_gender_mixed_pairs(members):
+    min_diff = float('inf')
+    best_pair = ([], [])
+    for comb in itertools.combinations(members, 4):
+        genders = [m['gender'] for m in comb]
+        if genders.count("여") < 2:
             continue
-        name = str(row[0]).strip()
-        gender = str(row[1]).strip() if len(row) > 1 and row[1] else "남"
-        rank = int(row[2]) if len(row) > 2 and row[2] else 0
+        for teamA in itertools.combinations(comb, 2):
+            teamB = [m for m in comb if m not in teamA]
+            if len(set(m['gender'] for m in teamA)) != 2:
+                continue
+            if len(set(m['gender'] for m in teamB)) != 2:
+                continue
+            sumA = sum(m['rank'] for m in teamA)
+            sumB = sum(m['rank'] for m in teamB)
+            diff = abs(sumA - sumB)
+            if diff < min_diff:
+                min_diff = diff
+                best_pair = (list(teamA), list(teamB))
+    return best_pair
 
-        new_members.append({
-            "name": name,
-            "gender": gender if gender in ["남", "여"] else "남",
-            "rank": rank,
-            "tuesday": False,
-            "thursday": False,
-            "participated": False
-        })
+def assign_court(court_name, candidates, used_list, mixed_required=True, only_male=False):
+    available = [m for m in candidates if m not in used_list]
+    if len(available) < 4:
+        return f"{court_name}: 인원 부족", []
 
-    members = load_data()
-    members.extend(new_members)
-    save_data(members)
-
-    return redirect(url_for("index"))
-
-
-@app.route("/generate")
-def generate_match():
-    members = [m for m in load_data() if m.get("participated")]
-    for m in members:
-        m.setdefault("late", False)
-
-    used_names = set()
-    matches = []
-
-    def make_match(title, candidate_pool, used_names, ignore_used=False):
-        courts = []
-        local_used = set()  # 현재 매칭에서 이미 배정된 사람들
-        
-        # used_names를 무시할지 여부에 따라 필터링 기준을 달리함
-        if ignore_used:
-            remain = [m for m in candidate_pool if not m.get("late")]
+    if only_male:
+        available = [m for m in available if m['gender'] == '남']
+        if len(available) < 4:
+            return f"{court_name}: 남자 인원 부족", []
+        teamA, teamB = best_match_pairs(available)
+    else:
+        female_count = len([m for m in available if m['gender'] == '여'])
+        if mixed_required and female_count >= 2:
+            teamA, teamB = best_gender_mixed_pairs(available)
         else:
-            remain = [m for m in candidate_pool if m["name"] not in used_names and not m.get("late")]
+            teamA, teamB = best_match_pairs(available)
 
+    used_list.extend(teamA + teamB)
+    return f"{court_name}: {', '.join(get_ranked_names(teamA))} vs {', '.join(get_ranked_names(teamB))}", teamA + teamB
 
-        # 2. 여자 코트 구성
-        females = [m for m in remain if m["gender"] == "여"]
-        if len(females) >= 4:
-            A, B = best_match(females)
-        elif len(females) >= 2:
-            others = [m for m in remain if m["name"] not in [f["name"] for f in females]]
-            mixed_candidates = females + others
-            A, B = best_match([m for m in mixed_candidates if m["name"] not in used_names])
-        else:
-            candidates = [m for m in remain if m["name"] not in used_names]
-            A, B = best_match(candidates)
-        courts.append(("3번 코트", A, B))
-        used_names.update(m["name"] for m in A + B)
+def generate_match_text(members):
+    participants = [m for m in members if m.get("participated")]
+    total_count = len(participants)
+    male_count = len([m for m in participants if m['gender'] == '남'])
+    female_count = len([m for m in participants if m['gender'] == '여'])
 
-        # 3. 남자 코트 구성
-        if ignore_used:
-            males = [m for m in remain if m["gender"] == "남" and m["name"] not in local_used]
-        else:
-            males = [m for m in remain if m["gender"] == "남" and m["name"] not in used_names and m["name"] not in local_used]
+    text = f"참여 인원: 총 {total_count}명 (남자 {male_count}명 / 여자 {female_count}명)\n\n"
 
+    def build_match(title, candidate_order):
+        output = f"\n✅ {title}\n"
+        used = []
+        result, team = assign_court("3번 코트", candidate_order, used)
+        output += result + "\n"
+        result, team = assign_court("4번 코트", candidate_order, used)
+        output += result + "\n"
+        result, team = assign_court("5번 코트", candidate_order, used, mixed_required=False, only_male=True)
+        output += result + "\n"
+        rested = [m['name'] for m in participants if m not in used]
+        output += "👋 쉬는 사람: " + (", ".join(rested) if rested else "없음") + "\n"
+        return output, used
 
-        males.sort(key=lambda x: x["rank"])
+    match1_used = []
+    females = [m for m in participants if m["gender"] == "여"]
+    if len(females) >= 4:
+        teamA, teamB = best_match_pairs(females)
+    elif 2 <= len(females) <= 3:
+        teamA, teamB = best_gender_mixed_pairs(participants)
+    else:
+        teamA, teamB = best_match_pairs(participants)
+    match1_used.extend(teamA + teamB)
+    text += "✅ 매칭 1 (06:10 ~ 06:35)\n"
+    text += "3번 코트: " + ", ".join(get_ranked_names(teamA)) + " vs " + ", ".join(get_ranked_names(teamB)) + "\n"
 
-        if len(males) >= 8:
-            A1 = [males[0], males[-1]]
-            B1 = [males[1], males[-2]]
-            courts.append(("4번 코트", A1, B1))
-            used_names.update(m["name"] for m in A1 + B1)
-            local_used.update(m["name"] for m in A1 + B1)
-            
-            if ignore_used:
-                remain_males = males[:]
+    for court in ["4번 코트", "5번 코트"]:
+        remaining = [m for m in participants if m not in match1_used]
+        if len(remaining) >= 4:
+            female_remain = [m for m in remaining if m["gender"] == "여"]
+            if len(female_remain) >= 2:
+                teamA, teamB = best_gender_mixed_pairs(remaining)
             else:
-                remain_males = [m for m in males if m["name"] not in used_names]
+                teamA, teamB = best_match_pairs(remaining)
+            match1_used.extend(teamA + teamB)
+            text += f"{court}: {', '.join(get_ranked_names(teamA))} vs {', '.join(get_ranked_names(teamB))}\n"
+        else:
+            text += f"{court}: 인원 부족\n"
 
-            if len(remain_males) >= 4:
-                A2 = [remain_males[0], remain_males[-1]]
-                B2 = [remain_males[1], remain_males[-2]]
-                courts.append(("5번 코트", A2, B2))
-                used_names.update(m["name"] for m in A2 + B2)
-                local_used.update(m["name"] for m in A2 + B2)
+    rested1 = [m for m in participants if m not in match1_used]
+    text += "👋 쉬는 사람: " + (", ".join(m["name"] for m in rested1) if rested1 else "없음") + "\n"
 
-        return {
-            "title": title,
-            "courts": courts
-        }
+    match2_candidates = rested1 + [m for m in participants if m not in rested1]
+    match2_text, match2_used = build_match("매칭 2 (06:37 ~ 07:00)", match2_candidates)
+    text += match2_text
 
-       # 매칭 1
-    match1 = make_match("매칭 1 (06:10 ~ 06:35)", members, used_names)
-    matches.append(match1)
+    rested3_priority1 = [m for m in participants if m not in match2_used]
+    rested3_priority2 = [m for m in rested1 if m not in rested3_priority1]
+    rested3_others = [m for m in participants if m not in rested3_priority1 + rested3_priority2]
+    match3_candidates = rested3_priority1 + rested3_priority2 + rested3_others
+    match3_text, _ = build_match("매칭 3 (07:00 ~ 07:25)", match3_candidates)
+    text += match3_text
 
-        # 매칭 2 디버깅
-    print("\n=== 매칭 1에 사용된 사람 ===")
-    print(used_names)
+    return text
 
-    not_used = [m for m in members if m["name"] not in used_names]
-    print("\n=== 매칭 2에서 우선 사용할 사람 (쉬는 사람) ===")
-    print([m["name"] for m in not_used])
-
-    fallback = [m for m in members if m["name"] in used_names]
-    print("\n=== 매칭 2 보충용 후보 ===")
-    print([m["name"] for m in fallback])
-
-    match2_candidates = not_used + fallback
-
-        # 매칭 2
-    match2 = make_match("매칭 2 (06:37 ~ 07:00)", match2_candidates, used_names, ignore_used=True)
-    matches.append(match2)
-
-
-    return render_template("matches.html", matches=matches)
-
-
-
-
+@app.route("/")
+def index():
+    members = load_members()
+    match_text = generate_match_text(members)
+    return render_template("index.html", match_text=match_text)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(debug=True)
