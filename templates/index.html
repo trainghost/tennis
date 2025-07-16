@@ -23,15 +23,20 @@
 <form method="post" action="/submit">
     <h2>결과</h2>
     <table border="1">
-        <tr><th>순위</th><th>이름</th><th>성별</th><th>참가 여부</th></tr>
+        <tr><th>순위</th><th>이름</th><th>성별</th><th>참가</th><th>일퇴</th><th>늦참</th></tr>
         {% for person in names %}
         <tr>
             <td>{{ person.rank }}</td>
             <td>{{ person.name }}</td>
             <td>{{ person.gender }}</td>
             <td>
-                <input type="radio" name="attendance_{{ person.rank }}" value="참가" required> 참가
-                <input type="radio" name="attendance_{{ person.rank }}" value="불참"> 불참
+                <input type="checkbox" name="attendance_{{ person.rank }}[]" value="참가">
+            </td>
+            <td>
+                <input type="checkbox" name="attendance_{{ person.rank }}[]" value="일퇴">
+            </td>
+            <td>
+                <input type="checkbox" name="attendance_{{ person.rank }}[]" value="늦참">
             </td>
         </tr>
         {% endfor %}
@@ -40,6 +45,7 @@
     <input type="submit" value="참가 여부 제출">
 </form>
 {% endif %}
+
 
 
 
