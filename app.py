@@ -190,12 +190,13 @@ def generate_match():
     used_names = set()
     matches = []
 
-    def make_match(title, available_members, used_names):
+    def make_match(title, candidate_pool, used_names):
         courts = []
 
-        remain = [m for m in available_members if m["name"] not in used_names and not m.get("late")]
+        # 1. 사용된 사람 제외하고, 지각하지 않은 사람만
+        remain = [m for m in candidate_pool if m["name"] not in used_names and not m.get("late")]
 
-        # 3번 코트: 여자 경기
+        # 2. 여자 코트 구성
         females = [m for m in remain if m["gender"] == "여"]
         if len(females) >= 4:
             A, B = best_match(females)
@@ -209,7 +210,7 @@ def generate_match():
         courts.append(("3번 코트", A, B))
         used_names.update(m["name"] for m in A + B)
 
-        # 4, 5번 코트: 남자 경기
+        # 3. 남자 코트 구성
         males = [m for m in remain if m["gender"] == "남" and m["name"] not in used_names]
         males.sort(key=lambda x: x["rank"])
 
@@ -231,15 +232,20 @@ def generate_match():
             "courts": courts
         }
 
-    # 매칭 1
+    # 매칭 1: 참여자 중 지각하지 않은 인원 기준
     match1 = make_match("매칭 1 (06:10 ~ 06:35)", members, used_names)
     matches.append(match1)
 
-    # 매칭 2
-    match2 = make_match("매칭 2 (06:37 ~ 07:00)", members, used_names)
+    # 매칭 2: 참여자 전체 중 매칭1에 안 나온 사람 우선
+    not_used = [m for m in members if m["name"] not in used_names]
+    fallback = [m for m in members if m["name"] in used_names]  # 필요 시 보충
+    match2_candidates = not_used + fallback
+
+    match2 = make_match("매칭 2 (06:37 ~ 07:00)", match2_candidates, used_names)
     matches.append(match2)
 
     return render_template("matches.html", matches=matches)
+
 
 
 
