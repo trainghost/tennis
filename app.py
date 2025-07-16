@@ -43,17 +43,12 @@ def index():
 
     return render_template('index.html', names=ranked_names)
 
-
-
 @app.route('/submit', methods=['POST'])
 def submit_attendance():
-    results = []
     group1 = []
-    group2 = []
-    group3 = []
+    attendees = []
 
     # 모든 참석 데이터 추출
-    attendees = []
     for i in range(1, 100):  # 최대 100명까지 탐색
         key = f'attendance_{i}[]'
         if key in request.form:
@@ -65,64 +60,16 @@ def submit_attendance():
             }
             attendees.append(status)
 
-    # 그룹 분류
-    for attendee in attendees:
-        status = attendee['status']
-        rank = attendee['rank']
+    # "참가" 체크한 사람들만 출력
+    participants = [attendee for attendee in attendees if "참가" in attendee['status']]
 
-        # 그룹 1 조건: 참가, 일퇴 체크, 늦참 체크 안함
-        if "참가" in status and "일퇴" in status and "늦참" not in status:
-            group1.append(attendee)
-        
-        # 그룹 2 조건: 참가 체크하고, 그룹 1에 포함되지 않음
-        elif "참가" in status and attendee not in group1:
-            if "늦참" in status:
-                group2.append(attendee)
-            elif "일퇴" in status:
-                group2.append(attendee)
-
-        # 그룹 3 조건: 참가 체크하고, 그룹 1, 2에 포함되지 않음
-        elif "참가" in status and attendee not in group1 and attendee not in group2:
-            group3.append(attendee)
-
-    # 1그룹 채우기 (최소 12명)
-    if len(group1) < 12:
-        # 참가 체크하고, 늦참 체크 안한 사람 중에서 랜덤으로 추가
-        available_for_group1 = [attendee for attendee in attendees if "참가" in attendee['status'] and "늦참" not in attendee['status'] and attendee not in group1]
-        additional_needed = 12 - len(group1)
-        group1.extend(random.sample(available_for_group1, additional_needed))
-
-    # 2그룹 채우기 (최소 12명)
-    if len(group2) < 12:
-        # 1그룹에 포함되지 않은 참가 체크한 사람 중에서 채우기
-        available_for_group2 = [attendee for attendee in attendees if "참가" in attendee['status'] and attendee not in group1 and attendee not in group2]
-        if len(group2) + len(available_for_group2) < 12:
-            # 부족하면 늦참 체크한 사람부터 채움
-            available_for_group2.extend([attendee for attendee in attendees if "참가" in attendee['status'] and "늦참" in attendee['status'] and attendee not in group1 and attendee not in group2])
-        additional_needed = 12 - len(group2)
-        group2.extend(random.sample(available_for_group2, additional_needed))
-
-    # 3그룹 채우기 (최소 12명)
-    if len(group3) < 12:
-        # 2그룹에 포함되지 않은 참가 체크한 사람 중에서 채우기
-        available_for_group3 = [attendee for attendee in attendees if "참가" in attendee['status'] and attendee not in group1 and attendee not in group2]
-        if len(group3) + len(available_for_group3) < 12:
-            # 부족하면 늦참 체크한 사람부터 채움
-            available_for_group3.extend([attendee for attendee in attendees if "참가" in attendee['status'] and "늦참" in attendee['status'] and attendee not in group1 and attendee not in group2])
-        if len(group3) + len(available_for_group3) < 12:
-            # 부족하면 일퇴 체크한 사람부터 채움
-            available_for_group3.extend([attendee for attendee in attendees if "참가" in attendee['status'] and "일퇴" in attendee['status'] and attendee not in group1 and attendee not in group2])
-        additional_needed = 12 - len(group3)
-        group3.extend(random.sample(available_for_group3, additional_needed))
+    # 참가한 사람들을 출력 (디버깅용)
+    print("참가 체크한 사람들:")
+    for participant in participants:
+        print(f"Rank: {participant['rank']}, Status: {participant['status']}")
 
     # 결과를 템플릿에 전달
-    results = {
-        'group1': group1,
-        'group2': group2,
-        'group3': group3
-    }
-
-    return render_template('submitted.html', results=results)
+    return render_template('submitted.html', participants=participants)
 
 
 if __name__ == '__main__':
