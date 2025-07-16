@@ -5,6 +5,9 @@
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; }
         .name-list { margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table, th, td { border: 1px solid black; }
+        th, td { padding: 10px; text-align: center; }
     </style>
 </head>
 <body>
@@ -14,34 +17,78 @@
         <button type="submit">업로드</button>
     </form>
 
-    
-{% if names %}
-<form method="post" action="/submit">
-    <h2>결과</h2>
-    <table border="1">
-        <tr><th>순위</th><th>이름</th><th>성별</th><th>참가</th><th>일퇴</th><th>늦참</th></tr>
-        {% for person in names %}
+    {% if names %}
+    <form method="post" action="/submit" onsubmit="return validateForm()">
+        <h2>결과</h2>
+        <table>
+            <tr><th>순위</th><th>이름</th><th>성별</th><th>참가</th><th>일퇴</th><th>늦참</th></tr>
+            {% for person in names %}
+            <tr>
+                <td>{{ person.rank }}</td>
+                <td>{{ person.name }}</td>
+                <td>{{ person.gender }}</td>
+                <td>
+                    <input type="checkbox" name="attendance_{{ person.rank }}[]" value="참가">
+                </td>
+                <td>
+                    <input type="checkbox" name="attendance_{{ person.rank }}[]" value="일퇴">
+                </td>
+                <td>
+                    <input type="checkbox" name="attendance_{{ person.rank }}[]" value="늦참">
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <input type="submit" value="참가 여부 제출">
+    </form>
+    {% endif %}
+
+    <h2>매칭 정보</h2>
+    <table>
         <tr>
-            <td>{{ person.rank }}</td>
-            <td>{{ person.name }}</td>
-            <td>{{ person.gender }}</td>
-            <td>
-                <input type="checkbox" name="attendance_{{ person.rank }}[]" value="참가">
-            </td>
-            <td>
-                <input type="checkbox" name="attendance_{{ person.rank }}[]" value="일퇴">
-            </td>
-            <td>
-                <input type="checkbox" name="attendance_{{ person.rank }}[]" value="늦참">
-            </td>
+            <th>매칭</th>
+            <th>3번 코트</th>
+            <th>4번 코트</th>
+            <th>5번 코트</th>
         </tr>
-        {% endfor %}
+        <tr>
+            <td>매칭1</td>
+            <td>Team A</td>
+            <td>vs</td>
+            <td>Team B</td>
+        </tr>
+        <tr>
+            <td>매칭2</td>
+            <td>Team A</td>
+            <td>vs</td>
+            <td>Team B</td>
+        </tr>
+        <tr>
+            <td>매칭3</td>
+            <td>Team A</td>
+            <td>vs</td>
+            <td>Team B</td>
+        </tr>
     </table>
-    <br>
-    <input type="submit" value="참가 여부 제출">
-</form>
-{% endif %}
 
+    <script>
+        // 폼 제출 전에 체크박스를 확인하는 JavaScript 함수
+        function validateForm() {
+            let checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            let isChecked = false;
+            checkboxes.forEach(function(checkbox) {
+                if (checkbox.checked) {
+                    isChecked = true;
+                }
+            });
 
+            if (!isChecked) {
+                alert("최소한 하나의 체크박스를 선택해야 합니다.");
+                return false;  // 폼 제출을 막습니다.
+            }
+            return true;
+        }
+    </script>
 </body>
 </html>
