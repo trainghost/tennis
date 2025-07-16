@@ -1,10 +1,10 @@
 <h2>참가 여부 결과</h2>
 <table border="1">
-    <tr><th>순위</th><th>참가 여부</th></tr>
+    <tr><th>순위</th><th>선택한 항목</th></tr>
     {% for item in results %}
     <tr>
         <td>{{ item.rank }}</td>
-        <td>{{ item.attendance }}</td>
+        <td>{{ item.status | join(', ') }}</td>
     </tr>
     {% endfor %}
 </table>
