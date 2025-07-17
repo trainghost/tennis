@@ -39,7 +39,7 @@ def match_participants(valid_members, early_bird_members):
 
 @app.route('/members', methods=['GET', 'POST'])
 def members():
-    global members_data
+    global members_data  # 이 줄을 함수의 처음에 배치해야 합니다.
 
     if request.method == 'POST':
         updated_data = []
@@ -54,7 +54,6 @@ def members():
         with open('members.json', 'w', encoding='utf-8') as f:
             json.dump(updated_data, f, ensure_ascii=False, indent=2)
 
-        global members_data
         members_data = updated_data  # 업데이트된 데이터 반영
 
         # 리다이렉트: 'GET' 요청으로 페이지 새로 고침
@@ -83,6 +82,7 @@ def members():
     print("매칭 2:", selected_for_matching_2)
 
     return render_template('members.html', members=members_data, participants_1=early_bird_members, participants_2=selected_for_matching_2)
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
