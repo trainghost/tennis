@@ -18,14 +18,20 @@
             <tr>
                 <td>{{ member['이름'] }}</td>
                 <td>{{ member['순위'] }}</td>
-                <td><input type="checkbox" name="participate_{{ loop.index0 }}"></td>
-                <td><input type="checkbox" name="early_{{ loop.index0 }}"></td>
-                <td><input type="checkbox" name="late_{{ loop.index0 }}"></td>
+                <td><input type="checkbox" name="participate_{{ loop.index0 }}" {% if member.get('참가') %}checked{% endif %}></td>
+                <td><input type="checkbox" name="early_{{ loop.index0 }}" {% if member.get('일퇴') %}checked{% endif %}></td>
+                <td><input type="checkbox" name="late_{{ loop.index0 }}" {% if member.get('늦참') %}checked{% endif %}></td>
             </tr>
             {% endfor %}
-
         </table>
         <button type="submit">저장</button>
     </form>
+
+    <h3>참가한 사람들</h3>
+    <ul>
+        {% for member in participants %}
+        <li>{{ member['이름'] }} (순위: {{ member['순위'] }})</li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
