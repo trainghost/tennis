@@ -1,0 +1,9 @@
+UPLOAD_HTML = r"""{% extends 'base.html' %}
+{% block content %}
+  <h1 class="mb-4">엑셀 데이터 업로드</h1>
+  <form method="POST" enctype="multipart/form-data" class="mb-4">
+      <input type="file" name="file" class="form-control mb-3" accept=".xlsx" required>
+      <button type="submit" class="btn btn-primary">업로드</button>
+  </form>
+{% endblock %}
+"""
