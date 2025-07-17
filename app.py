@@ -9,6 +9,32 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 members_data = []  # 업로드 후 저장
 
+# 매칭 1과 매칭 2 참가자 필터링을 위한 함수
+def match_participants(valid_members):
+    # 매칭 2: 늦참 체크한 사람들 우선적으로 포함
+    late_members = [m for m in valid_members if m.get('늦참')][:12]
+
+    # 늦참이 부족하면 나머지 사람들을 추가 (매칭 1에 포함되지 않은 사람 중에서)
+    remaining_count_2 = 12 - len(late_members)
+    if remaining_count_2 > 0:
+        remaining_members_2 = [m for m in valid_members if m not in late_members][:remaining_count_2]
+        late_members.extend(remaining_members_2)
+
+    # 매칭 2에 일퇴 체크된 사람들 추가 (일퇴 체크된 사람들 중 매칭 2에 포함되지 않은 사람)
+    early_bird_in_matching_2 = [m for m in valid_members if m.get('일퇴') and m not in late_members][:12]
+    remaining_count_3 = 12 - len(early_bird_in_matching_2)
+    if remaining_count_3 > 0:
+        remaining_members_3 = [m for m in valid_members if m not in early_bird_in_matching_2][:remaining_count_3]
+        early_bird_in_matching_2.extend(remaining_members_3)
+
+    # 매칭 2에 참여 체크된 사람들 추가 (12명이 안 채워졌다면)
+    remaining_count_4 = 12 - len(early_bird_in_matching_2)
+    if remaining_count_4 > 0:
+        remaining_participants = [m for m in valid_members if m not in late_members and m not in early_bird_in_matching_2][:remaining_count_4]
+        early_bird_in_matching_2.extend(remaining_participants)
+
+    return late_members, early_bird_in_matching_2
+
 @app.route('/')
 def index():
     return render_template('upload.html')
@@ -65,37 +91,14 @@ def members():
     # 매칭 1에 포함되지 않은 사람들 필터링
     not_in_early_bird = [m for m in valid_members if m not in early_bird_members]
 
-    # 매칭 2: 늦참에 체크된 사람을 최우선으로 포함 (늦참 체크된 사람)
-    late_members = [m for m in not_in_early_bird if m.get('늦참')][:12]  # 늦참 체크된 사람들 우선
-
-    # 매칭 2에 늦참이 부족하면 나머지 사람들을 추가 (매칭 1에 포함되지 않은 사람 중에서)
-    remaining_count_2 = 12 - len(late_members)
-    if remaining_count_2 > 0:
-        remaining_members_2 = [m for m in not_in_early_bird if m not in late_members][:remaining_count_2]
-        late_members.extend(remaining_members_2)
-
-    # 매칭 2에 일퇴 체크된 사람들 추가
-    early_bird_in_matching_2 = [m for m in late_members if m.get('일퇴')][:12]
-    remaining_count_3 = 12 - len(early_bird_in_matching_2)
-    if remaining_count_3 > 0:
-        remaining_members_3 = [m for m in late_members if m not in early_bird_in_matching_2][:remaining_count_3]
-        early_bird_in_matching_2.extend(remaining_members_3)
-
-    # 매칭 2에 참여 체크된 사람들 추가 (12명이 안 채워졌다면)
-    remaining_count_4 = 12 - len(early_bird_in_matching_2)
-    if remaining_count_4 > 0:
-        remaining_participants = [m for m in valid_members if m not in late_members and m not in early_bird_in_matching_2][:remaining_count_4]
-        early_bird_in_matching_2.extend(remaining_participants)
+    # 매칭 2에 대한 처리
+    late_members, early_bird_in_matching_2 = match_participants(not_in_early_bird)
 
     # 매칭 1과 매칭 2 출력 (디버깅용)
     print("매칭 1:", early_bird_members)
     print("매칭 2:", early_bird_in_matching_2)
 
     return render_template('members.html', members=members_data, participants_1=early_bird_members, participants_2=early_bird_in_matching_2)
-
-
-
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
