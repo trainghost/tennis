@@ -62,12 +62,17 @@ def members_list():
 
         members_data = updated_data  # 업데이트된 데이터 반영
 
+        # 리다이렉트: 'GET' 요청으로 페이지 새로 고침
+        return redirect(url_for('members'))
+
     # 참가한 사람들 필터링
     participants = [member for member in members_data if member.get('참가')]
 
+    # 참가자 목록 출력 (디버깅용)
     print("참가한 사람들:", participants)
 
     return render_template('members.html', members=members_data, participants=participants)
+
 
 
 if __name__ == "__main__":
