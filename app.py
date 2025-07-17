@@ -47,13 +47,26 @@ def members():
         # 리다이렉트: 'GET' 요청으로 페이지 새로 고침
         return redirect(url_for('members'))
 
-    # 참가한 사람들 필터링
-    participants = [member for member in members_data if member.get('참가')]
+    # 조건에 맞는 사람들 필터링
+    valid_members = [
+        member for member in members_data
+        if member.get('참가') and not member.get('늦참')  # 참가자 중에서 늦참 체크된 사람 제외
+    ]
+
+    # 일퇴 체크된 사람 우선적으로 12명 추출
+    early_bird_members = [m for m in valid_members if m.get('일퇴')][:12]  # 일퇴 체크된 사람들 먼저 포함
+
+    # 일퇴 체크된 사람이 12명 미만이라면, 나머지 사람들을 추가
+    remaining_count = 12 - len(early_bird_members)
+    if remaining_count > 0:
+        remaining_members = [m for m in valid_members if not m.get('일퇴')][:remaining_count]
+        early_bird_members.extend(remaining_members)
 
     # 참가자 목록 출력 (디버깅용)
-    print("참가한 사람들:", participants)
+    print("매칭 1:", early_bird_members)
 
-    return render_template('members.html', members=members_data, participants=participants)
+    return render_template('members.html', members=members_data, participants=early_bird_members)
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
