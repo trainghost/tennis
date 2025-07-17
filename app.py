@@ -7,7 +7,7 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-members_data = []  # 엑셀에서 업로드된 회원 정보 저장
+members_data = []
 
 @app.route('/')
 def index():
@@ -18,7 +18,7 @@ def upload():
     file = request.files['file']
     filepath = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(filepath)
-    
+
     df = pd.read_excel(filepath)
     global members_data
     members_data = df.to_dict(orient='records')
@@ -33,29 +33,55 @@ def members():
             member['일퇴'] = f'early_{idx}' in request.form
             member['늦참'] = f'late_{idx}' in request.form
 
-        # Step 1: 참가 && 일퇴 체크된 사람
-        early_participants = [m for m in members_data if m.get('참가') and m.get('일퇴')]
+        # 매칭 1: 참가 + 일퇴 우선 → 부족하면 참가+늦참 ❌ 중 랜덤
+        m1_early = [m for m in members_data if m.get('참가') and m.get('일퇴')]
+        m1_fill = [m for m in members_data if m.get('참가') and not m.get('늦참') and m not in m1_early]
+        random.shuffle(m1_fill)
+        participants_1 = (m1_early + m1_fill)[:12]
 
-        # Step 2: 참가 && 늦참이 아닌 사람 중에서, early_participants에 없는 사람
-        remaining_slots = 12 - len(early_participants)
-        additional_candidates = [
-            m for m in members_data
-            if m.get('참가') and not m.get('늦참') and m not in early_participants
-        ]
-        random.shuffle(additional_candidates)
-        additional_participants = additional_candidates[:remaining_slots]
+        # 매칭 2: 조건별로 차례로 구성
+        p2_set = []
 
-        # 최종 매칭 1
-        participants_1 = early_participants + additional_participants
-        participants_1 = participants_1[:12]
+        # 1. 참가 + 늦참 체크한 사람
+        part_late = [m for m in members_data if m.get('참가') and m.get('늦참')]
+        p2_set.extend(part_late)
+
+        # 2. 참가했지만 매칭 1에 빠진 사람
+        part_all = [m for m in members_data if m.get('참가')]
+        m1_set = set(id(m) for m in participants_1)
+        missing_in_m1 = [m for m in part_all if id(m) not in m1_set]
+        for m in missing_in_m1:
+            if m not in p2_set:
+                p2_set.append(m)
+
+        # 3. 참가 + 일퇴 체크한 사람
+        part_early = [m for m in members_data if m.get('참가') and m.get('일퇴')]
+        for m in part_early:
+            if m not in p2_set:
+                p2_set.append(m)
+
+        # 4. 부족하면 참가자 중 남은 사람 랜덤 추가
+        needed = 12 - len(p2_set)
+        if needed > 0:
+            remaining = [m for m in part_all if m not in p2_set]
+            random.shuffle(remaining)
+            p2_set.extend(remaining[:needed])
+
+        participants_2 = p2_set[:12]
 
         return render_template(
             'members.html',
             members=members_data,
-            participants_1=participants_1
+            participants_1=participants_1,
+            participants_2=participants_2
         )
 
-    return render_template('members.html', members=members_data, participants_1=[])
+    return render_template(
+        'members.html',
+        members=members_data,
+        participants_1=[],
+        participants_2=[]
+    )
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
