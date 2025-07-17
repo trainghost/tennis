@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>회원 체크</title>
+</head>
+<body>
+    <h2>회원 체크</h2>
+    <form method="post">
+        <table border="1">
+            <tr>
+                <th>이름</th>
+                <th>순위</th>
+                <th>참가</th>
+                <th>일퇴</th>
+                <th>늦참</th>
+            </tr>
+            {% for i, member in enumerate(members) %}
+            <tr>
+                <td>{{ member['이름'] }}</td>
+                <td>{{ member['순위'] }}</td>
+                <td><input type="checkbox" name="participate_{{ i }}"></td>
+                <td><input type="checkbox" name="early_{{ i }}"></td>
+                <td><input type="checkbox" name="late_{{ i }}"></td>
+            </tr>
+            {% endfor %}
+        </table>
+        <button type="submit">저장</button>
+    </form>
+</body>
+</html>
