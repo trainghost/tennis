@@ -65,7 +65,7 @@ def members():
     # 매칭 1에 포함되지 않은 사람들 필터링
     not_in_early_bird = [m for m in valid_members if m not in early_bird_members]
 
-    # 매칭 2: 늦참을 우선 포함 (늦참 체크된 사람)
+    # 매칭 2: 늦참에 체크된 사람을 최우선으로 포함 (늦참 체크된 사람)
     late_members = [m for m in not_in_early_bird if m.get('늦참')][:12]  # 늦참 체크된 사람들 우선
 
     # 매칭 2에 늦참이 부족하면 나머지 사람들을 추가 (매칭 1에 포함되지 않은 사람 중에서)
@@ -92,6 +92,7 @@ def members():
     print("매칭 2:", early_bird_in_matching_2)
 
     return render_template('members.html', members=members_data, participants_1=early_bird_members, participants_2=early_bird_in_matching_2)
+
 
 
 
