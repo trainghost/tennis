@@ -18,15 +18,17 @@
                 </tr>
             </thead>
             <tbody>
-                {% for idx, member in enumerate(members) %}
-                <tr>
-                    <td>{{ member['이름'] }}</td>
-                    <td>{{ member['순위'] }}</td>
-                    <td><input type="checkbox" name="participate_{{ idx }}" {% if member.get('참가') %}checked{% endif %}></td>
+                {% for member in members %}
+  <tr>
+    <td>{{ loop.index }}</td>  {# loop.index는 1부터 시작합니다 #}
+    <td>{{ member.name }}</td>
+    <td>{{ member.rank }}</td>
+      <td><input type="checkbox" name="participate_{{ idx }}" {% if member.get('참가') %}checked{% endif %}></td>
                     <td><input type="checkbox" name="early_{{ idx }}" {% if member.get('일퇴') %}checked{% endif %}></td>
                     <td><input type="checkbox" name="late_{{ idx }}" {% if member.get('늦참') %}checked{% endif %}></td>
-                </tr>
-                {% endfor %}
+  </tr>
+{% endfor %}
+            
             </tbody>
         </table>
         <br>
