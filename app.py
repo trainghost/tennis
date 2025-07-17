@@ -40,6 +40,21 @@ app.config["UPLOAD_FOLDER"] = str(UPLOAD_FOLDER)
 UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 DATA_FOLDER.mkdir(parents=True, exist_ok=True)
 
+# 템플릿 내용 정의
+BASE_HTML = """<!doctype html><html>...</html>"""
+UPLOAD_HTML = """{% extends 'base.html' %}..."""
+TABLE_HTML = """{% extends 'base.html' %}..."""
+
+# 템플릿 생성 함수
+def _ensure_templates():
+    tdir = Path(app.root_path) / "templates"
+    tdir.mkdir(exist_ok=True)
+    (tdir / "base.html").write_text(BASE_HTML, encoding="utf-8")
+    (tdir / "upload.html").write_text(UPLOAD_HTML, encoding="utf-8")
+    (tdir / "table.html").write_text(TABLE_HTML, encoding="utf-8")
+
+# 템플릿 자동 생성 (초기 실행 시)
+_ensure_templates()
 
 def allowed_file(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXT
