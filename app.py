@@ -7,6 +7,11 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+@app.route('/')
+def home():
+    return render_template('index.html')  # index.html은 기본 페이지로 수정할 수 있음
+
+
 members_data = []  # 업로드 후 저장
 
 # 매칭 1과 매칭 2 참가자 필터링을 위한 함수
