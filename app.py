@@ -23,28 +23,10 @@ def upload():
     global members_data
     members_data = df.to_dict(orient='records')  # [{'이름': '홍길동', '순위': 1}, ...]
     
-    return redirect(url_for('members'))
+    return redirect(url_for('members'))  # 업로드 후 /members로 리다이렉트
 
 @app.route('/members', methods=['GET', 'POST'])
 def members():
-    if request.method == 'POST':
-        updated_data = []
-        for i, member in enumerate(members_data):
-            member['참가'] = request.form.get(f'participate_{i}') == 'on'
-            member['일퇴'] = request.form.get(f'early_{i}') == 'on'
-            member['늦참'] = request.form.get(f'late_{i}') == 'on'
-            updated_data.append(member)
-
-        # JSON으로 저장
-        with open('members.json', 'w', encoding='utf-8') as f:
-            json.dump(updated_data, f, ensure_ascii=False, indent=2)
-
-        return "저장 완료!"
-
-    return render_template('members.html', members=members_data)
-
-@app.route('/members', methods=['GET', 'POST'])
-def members_list():
     global members_data
 
     if request.method == 'POST':
@@ -72,8 +54,6 @@ def members_list():
     print("참가한 사람들:", participants)
 
     return render_template('members.html', members=members_data, participants=participants)
-
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
