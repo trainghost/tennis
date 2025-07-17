@@ -25,5 +25,6 @@ def upload_file():
             table_html = df.to_html(classes='table table-bordered table-striped', index=False)
     return render_template('index.html', table_html=table_html)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
