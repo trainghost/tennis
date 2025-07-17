@@ -1,0 +1,45 @@
+TABLE_HTML = r"""{% extends 'base.html' %}
+{% block content %}
+  <h1 class="mb-4">업로드한 데이터</h1>
+  <form method="POST">
+    <div class="table-responsive d-flex justify-content-center">
+      <table class="table table-bordered table-striped text-center align-middle w-auto custom-centered-table">
+        <thead class="table-light">
+          <tr>
+            <th>이름</th>
+            {% if rank_col %}<th>순위</th>{% endif %}
+            <th>참가</th>
+            <th>일퇴</th>
+            <th>늦참</th>
+            {% if win_col %}<th>승</th>{% endif %}
+            {% if draw_col %}<th>무</th>{% endif %}
+            {% if loss_col %}<th>패</th>{% endif %}
+            {% if points_col %}<th>승점<br><small>(전체/평균)</small></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in records %}
+          {# 이름 찾기 #}
+          {% set name = r.get(name_col) or r.get('이름') or r.get('name') %}
+          <tr>
+            <td>{{ name }}</td>
+            {% if rank_col %}<td>{{ r.get(rank_col) }}</td>{% endif %}
+            <td><input type="checkbox" name="chk_participate_{{ name }}" {% if r['chk_참가'] %}checked{% endif %}></td>
+            <td><input type="checkbox" name="chk_earlyleave_{{ name }}" {% if r['chk_일퇴'] %}checked{% endif %}></td>
+            <td><input type="checkbox" name="chk_latestart_{{ name }}" {% if r['chk_늦참'] %}checked{% endif %}></td>
+            {% if win_col %}<td>{{ r.get(win_col) }}</td>{% endif %}
+            {% if draw_col %}<td>{{ r.get(draw_col) }}</td>{% endif %}
+            {% if loss_col %}<td>{{ r.get(loss_col) }}</td>{% endif %}
+            {% if points_col %}<td>{{ r.get(points_col) }}</td>{% endif %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="text-center mt-3">
+      <button type="submit" class="btn btn-success">체크 상태 저장</button>
+      <a href="{{ url_for('upload_file') }}" class="btn btn-secondary ms-2">다른 파일 업로드</a>
+    </div>
+  </form>
+{% endblock %}
+"""
