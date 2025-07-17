@@ -65,6 +65,8 @@ def members_list():
     # 참가한 사람들 필터링
     participants = [member for member in members_data if member.get('참가')]
 
+    print("참가한 사람들:", participants)
+
     return render_template('members.html', members=members_data, participants=participants)
 
 
