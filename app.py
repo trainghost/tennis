@@ -7,7 +7,7 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-members_data = []  # 업로드된 회원 정보
+members_data = []  # 엑셀에서 업로드된 회원 정보 저장
 
 @app.route('/')
 def index():
@@ -19,40 +19,42 @@ def upload():
     filepath = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(filepath)
     
-    # 업로드된 Excel 파일을 읽어들임
     df = pd.read_excel(filepath)
-
-    # 데이터 리스트로 변환
     global members_data
     members_data = df.to_dict(orient='records')
 
-    return redirect(url_for('members'))  # 업로드 후 /members로 리다이렉트
+    return redirect(url_for('members'))
 
 @app.route('/members', methods=['GET', 'POST'])
 def members():
     if request.method == 'POST':
-        # 폼에서 받은 체크박스 정보 처리
         for idx, member in enumerate(members_data):
-            member['참가'] = 'participate_' + str(idx) in request.form
-            member['일퇴'] = 'early_' + str(idx) in request.form
-            member['늦참'] = 'late_' + str(idx) in request.form
+            member['참가'] = f'participate_{idx}' in request.form
+            member['일퇴'] = f'early_{idx}' in request.form
+            member['늦참'] = f'late_{idx}' in request.form
 
-        # 매칭 1: 참가 체크된 사람 중 일퇴 체크된 사람 우선 뽑기
-        participants_early = [m for m in members_data if m.get('참가') and m.get('일퇴')]
-        
-        # 만약 12명이 안되면 늦참 체크 안 된 사람 중에서 랜덤으로 뽑기
-        if len(participants_early) < 12:
-            remaining_count = 12 - len(participants_early)
-            participants_late = [m for m in members_data if m.get('참가') and not m.get('늦참')]
-            additional_participants = random.sample(participants_late, remaining_count)
-            participants_early.extend(additional_participants)
-        
-        # 매칭 1에 해당하는 12명을 선정
-        participants_1 = participants_early[:12]
+        # Step 1: 참가 && 일퇴 체크된 사람
+        early_participants = [m for m in members_data if m.get('참가') and m.get('일퇴')]
 
-        return render_template('members.html', members=members_data, participants_1=participants_1)
-    
-    # GET 요청일 경우 (페이지를 처음 로드한 경우)
+        # Step 2: 참가 && 늦참이 아닌 사람 중에서, early_participants에 없는 사람
+        remaining_slots = 12 - len(early_participants)
+        additional_candidates = [
+            m for m in members_data
+            if m.get('참가') and not m.get('늦참') and m not in early_participants
+        ]
+        random.shuffle(additional_candidates)
+        additional_participants = additional_candidates[:remaining_slots]
+
+        # 최종 매칭 1
+        participants_1 = early_participants + additional_participants
+        participants_1 = participants_1[:12]
+
+        return render_template(
+            'members.html',
+            members=members_data,
+            participants_1=participants_1
+        )
+
     return render_template('members.html', members=members_data, participants_1=[])
 
 if __name__ == "__main__":
