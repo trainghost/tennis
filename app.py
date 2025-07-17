@@ -46,20 +46,20 @@ def members():
         p2_set.extend(part_late)
 
         part_all = [m for m in members_data if m.get('참가')]
-        m1_set = set(id(m) for m in participants_1)
-        missing_in_m1 = [m for m in part_all if id(m) not in m1_set]
+        m1_names = set(m['이름'] for m in participants_1)
+        missing_in_m1 = [m for m in part_all if m['이름'] not in m1_names]
         for m in missing_in_m1:
-            if m not in p2_set:
+            if m['이름'] not in [p['이름'] for p in p2_set]:
                 p2_set.append(m)
 
         part_early = [m for m in members_data if m.get('참가') and m.get('일퇴')]
         for m in part_early:
-            if m not in p2_set:
+            if m['이름'] not in [p['이름'] for p in p2_set]:
                 p2_set.append(m)
 
         needed = 12 - len(p2_set)
         if needed > 0:
-            remaining = [m for m in part_all if m not in p2_set]
+            remaining = [m for m in part_all if m['이름'] not in [p['이름'] for p in p2_set]]
             random.shuffle(remaining)
             p2_set.extend(remaining[:needed])
 
@@ -68,27 +68,28 @@ def members():
         # 매칭 3
         p3_set = []
 
-        # 1. 참가 + 일퇴 체크한 사람
+        # 1. 참가 + 일퇴
         part_early = [m for m in members_data if m.get('참가') and m.get('일퇴')]
         p3_set.extend(part_early)
 
-        # 2. 참가 + 늦참 체크한 사람
+        # 2. 참가 + 늦참
         part_late = [m for m in members_data if m.get('참가') and m.get('늦참')]
         for m in part_late:
-            if m not in p3_set:
+            if m['이름'] not in [p['이름'] for p in p3_set]:
                 p3_set.append(m)
 
         # 3. 매칭 2에 포함되지 않은 참가자
-        p2_ids = set(id(m) for m in participants_2)
-        not_in_p2 = [m for m in part_all if id(m) not in p2_ids]
+        p2_names = set(m['이름'] for m in participants_2)
+        not_in_p2 = [m for m in part_all if m['이름'] not in p2_names]
         for m in not_in_p2:
-            if m not in p3_set:
+            if m['이름'] not in [p['이름'] for p in p3_set]:
                 p3_set.append(m)
 
-        # 4. 부족하면 참가자 중에서 랜덤 추가
+        # 4. 부족하면 참가자 중 남은 사람 랜덤 추가
         needed = 12 - len(p3_set)
         if needed > 0:
-            remaining = [m for m in part_all if m not in p3_set]
+            existing_names = set(m['이름'] for m in p3_set)
+            remaining = [m for m in part_all if m['이름'] not in existing_names]
             random.shuffle(remaining)
             p3_set.extend(remaining[:needed])
 
