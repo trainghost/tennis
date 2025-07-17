@@ -1,32 +1,13 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>회원 체크표 & 매칭</title>
-    <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-bottom: 30px;
-        }
-        th, td {
-            border: 1px solid #999;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background-color: #f0f0f0;
-        }
-        h2 {
-            margin-top: 40px;
-        }
-    </style>
+    <title>회원 체크 및 매칭</title>
 </head>
 <body>
-
-    <h1>회원 체크표</h1>
-    <form method="POST">
-        <table>
+    <h2>회원 체크표</h2>
+    <form method="post">
+        <table border="1" cellpadding="5" cellspacing="0">
             <thead>
                 <tr>
                     <th>이름</th>
@@ -38,46 +19,45 @@
             </thead>
             <tbody>
                 {% for idx, member in enumerate(members) %}
-                    <tr>
-                        <td>{{ member['이름'] }}</td>
-                        <td>{{ member['순위'] }}</td>
-                        <td><input type="checkbox" name="participate_{{ idx }}" {% if member.get('참가') %}checked{% endif %}></td>
-                        <td><input type="checkbox" name="early_{{ idx }}" {% if member.get('일퇴') %}checked{% endif %}></td>
-                        <td><input type="checkbox" name="late_{{ idx }}" {% if member.get('늦참') %}checked{% endif %}></td>
-                    </tr>
+                <tr>
+                    <td>{{ member['이름'] }}</td>
+                    <td>{{ member['순위'] }}</td>
+                    <td><input type="checkbox" name="participate_{{ idx }}" {% if member.get('참가') %}checked{% endif %}></td>
+                    <td><input type="checkbox" name="early_{{ idx }}" {% if member.get('일퇴') %}checked{% endif %}></td>
+                    <td><input type="checkbox" name="late_{{ idx }}" {% if member.get('늦참') %}checked{% endif %}></td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
-
-        <button type="submit">매칭 생성</button>
+        <br>
+        <input type="submit" value="매칭 생성">
     </form>
 
     {% if participants_1 %}
-        <h2>매칭 1</h2>
-        <ul>
-            {% for m in participants_1 %}
-                <li>{{ m['이름'] }} (순위: {{ m['순위'] }})</li>
-            {% endfor %}
-        </ul>
+    <h3>매칭 1</h3>
+    <ol>
+        {% for member in participants_1 %}
+        <li>{{ member['이름'] }} (순위 {{ member['순위'] }})</li>
+        {% endfor %}
+    </ol>
     {% endif %}
 
     {% if participants_2 %}
-        <h2>매칭 2</h2>
-        <ul>
-            {% for m in participants_2 %}
-                <li>{{ m['이름'] }} (순위: {{ m['순위'] }})</li>
-            {% endfor %}
-        </ul>
+    <h3>매칭 2</h3>
+    <ol>
+        {% for member in participants_2 %}
+        <li>{{ member['이름'] }} (순위 {{ member['순위'] }})</li>
+        {% endfor %}
+    </ol>
     {% endif %}
 
     {% if participants_3 %}
-        <h2>매칭 3</h2>
-        <ul>
-            {% for m in participants_3 %}
-                <li>{{ m['이름'] }} (순위: {{ m['순위'] }})</li>
-            {% endfor %}
-        </ul>
+    <h3>매칭 3</h3>
+    <ol>
+        {% for member in participants_3 %}
+        <li>{{ member['이름'] }} (순위 {{ member['순위'] }})</li>
+        {% endfor %}
+    </ol>
     {% endif %}
-
 </body>
 </html>
