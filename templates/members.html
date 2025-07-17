@@ -14,15 +14,16 @@
                 <th>일퇴</th>
                 <th>늦참</th>
             </tr>
-            {% for i, member in enumerate(members) %}
+            {% for member in members %}
             <tr>
                 <td>{{ member['이름'] }}</td>
                 <td>{{ member['순위'] }}</td>
-                <td><input type="checkbox" name="participate_{{ i }}"></td>
-                <td><input type="checkbox" name="early_{{ i }}"></td>
-                <td><input type="checkbox" name="late_{{ i }}"></td>
+                <td><input type="checkbox" name="participate_{{ loop.index0 }}"></td>
+                <td><input type="checkbox" name="early_{{ loop.index0 }}"></td>
+                <td><input type="checkbox" name="late_{{ loop.index0 }}"></td>
             </tr>
             {% endfor %}
+
         </table>
         <button type="submit">저장</button>
     </form>
