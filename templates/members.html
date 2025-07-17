@@ -28,10 +28,18 @@
     </form>
 
     <h3>매칭 1</h3>
-    <ul>
-        {% for member in participants %}
-        <li>{{ member['이름'] }} (순위: {{ member['순위'] }})</li>
-        {% endfor %}
-    </ul>
+<ul>
+    {% for member in participants_1 %}
+    <li>{{ member['이름'] }} (순위: {{ member['순위'] }})</li>
+    {% endfor %}
+</ul>
+
+<h3>매칭 2</h3>
+<ul>
+    {% for member in participants_2 %}
+    <li>{{ member['이름'] }} (순위: {{ member['순위'] }})</li>
+    {% endfor %}
+</ul>
+
 </body>
 </html>
