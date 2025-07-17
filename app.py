@@ -53,7 +53,7 @@ def members():
         if member.get('참가') and not member.get('늦참')  # 참가자 중에서 늦참 체크된 사람 제외
     ]
 
-    # 일퇴 체크된 사람 우선적으로 12명 추출
+    # 일퇴 체크된 사람 우선적으로 12명 추출 (매칭 1)
     early_bird_members = [m for m in valid_members if m.get('일퇴')][:12]  # 일퇴 체크된 사람들 먼저 포함
 
     # 일퇴 체크된 사람이 12명 미만이라면, 나머지 사람들을 추가
@@ -62,10 +62,32 @@ def members():
         remaining_members = [m for m in valid_members if not m.get('일퇴')][:remaining_count]
         early_bird_members.extend(remaining_members)
 
-    # 참가자 목록 출력 (디버깅용)
-    print("매칭 1:", early_bird_members)
+    # 매칭 1에 포함되지 않은 사람들을 위한 필터링
+    not_in_early_bird = [m for m in valid_members if m not in early_bird_members]
 
-    return render_template('members.html', members=members_data, participants=early_bird_members)
+    # 매칭 2: 늦참을 우선 포함
+    late_members = [m for m in not_in_early_bird if m.get('늦참')][:12]  # 늦참 체크된 사람들 우선
+
+    # 매칭 2에 늦참이 부족하면 나머지 사람들을 추가 (매칭 1에 포함되지 않은 사람 중에서)
+    remaining_count_2 = 12 - len(late_members)
+    if remaining_count_2 > 0:
+        # 나머지 사람들 추가 (늦참 체크 안된 사람들)
+        remaining_members_2 = [m for m in not_in_early_bird if m not in late_members][:remaining_count_2]
+        late_members.extend(remaining_members_2)
+
+    # 매칭 2에 일퇴 체크된 사람들 추가
+    early_bird_in_matching_2 = [m for m in late_members if m.get('일퇴')][:12]
+    remaining_count_3 = 12 - len(early_bird_in_matching_2)
+    if remaining_count_3 > 0:
+        remaining_members_3 = [m for m in late_members if m not in early_bird_in_matching_2][:remaining_count_3]
+        early_bird_in_matching_2.extend(remaining_members_3)
+
+    # 매칭 1과 매칭 2 출력 (디버깅용)
+    print("매칭 1:", early_bird_members)
+    print("매칭 2:", late_members)
+
+    return render_template('members.html', members=members_data, participants_1=early_bird_members, participants_2=late_members)
+
 
 
 if __name__ == "__main__":
