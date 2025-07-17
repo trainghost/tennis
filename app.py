@@ -44,7 +44,7 @@ def members():
     return render_template('members.html', members=members_data)
 
 @app.route('/members', methods=['GET', 'POST'])
-def members():
+def members_list():
     global members_data
 
     if request.method == 'POST':
