@@ -10,7 +10,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 members_data = []
 
-# ✅ 이름 → 성별 매핑
+# 이름 → 성별 매핑
 gender_map = {
     '장다민': '여', '양승하': '남', '류재리': '여', '우원석': '남',
     '남상훈': '남', '강민구': '남', '임예지': '여', '이준희': '남',
@@ -54,78 +54,61 @@ def members():
             member['늦참'] = f'late_{idx}' in request.form
 
         # 매칭 1
-        m1_early = [m for m in members_data if m.get('참가') and m.get('일퇴')]
-        m1_fill = [m for m in members_data if m.get('참가') and not m.get('늦참') and m not in m1_early]
-        random.shuffle(m1_fill)
-        participants_1 = (m1_early + m1_fill)[:12]
-        participants_1 = sorted(participants_1, key=lambda x: x['순위'])
+        participants_1 = sorted([m for m in members_data if m.get('참가')], key=lambda x: x['순위'])[:12]
 
-        # 매칭 2
-        p2_set = []
+        # 여자가 몇 명 있는지 계산
+        female_count = sum(1 for p in participants_1 if gender_map.get(p['이름']) == '여')
 
-        part_late = [m for m in members_data if m.get('참가') and m.get('늦참')]
-        p2_set.extend(part_late)
+        # 코트별 대진표 생성
+        matches = {
+            '3번코트': [],
+            '4번코트': [],
+            '5번코트': []
+        }
 
-        part_all = [m for m in members_data if m.get('참가')]
-        m1_set = set(id(m) for m in participants_1)
-        missing_in_m1 = [m for m in part_all if id(m) not in m1_set]
-        for m in missing_in_m1:
-            if m not in p2_set:
-                p2_set.append(m)
+        # 여자의 수에 따른 대진표 작성
+        if female_count == 0:
+            matches['3번코트'] = [(participants_1[0], participants_1[-1]), (participants_1[1], participants_1[-2]), (participants_1[2], participants_1[-3]), (participants_1[3], participants_1[-4])]
+            matches['4번코트'] = [(participants_1[4], participants_1[-5]), (participants_1[5], participants_1[-6]), (participants_1[6], participants_1[-7]), (participants_1[7], participants_1[-8])]
+            matches['5번코트'] = [(participants_1[8], participants_1[-9]), (participants_1[9], participants_1[-10]), (participants_1[10], participants_1[-11]), (participants_1[11], participants_1[0])]
+        
+        elif female_count == 1:
+            matches['3번코트'] = [(participants_1[0], participants_1[12 - female_count - 1]), (participants_1[1], participants_1[2])]
+            matches['4번코트'] = [(participants_1[3], participants_1[-4]), (participants_1[4], participants_1[-5]), (participants_1[5], participants_1[-6]), (participants_1[6], participants_1[-7])]
+            matches['5번코트'] = [(participants_1[7], participants_1[-8]), (participants_1[8], participants_1[-9]), (participants_1[9], participants_1[-10]), (participants_1[10], participants_1[-11])]
+        
+        elif female_count == 2:
+            matches['3번코트'] = [(participants_1[0], participants_1[1]), (participants_1[2], participants_1[3])]
+            matches['4번코트'] = [(participants_1[4], participants_1[5]), (participants_1[6], participants_1[7])]
+            matches['5번코트'] = [(participants_1[8], participants_1[9]), (participants_1[10], participants_1[11])]
+        
+        elif female_count == 3:
+            matches['3번코트'] = [(participants_1[0], participants_1[1]), (participants_1[2], participants_1[3])]
+            matches['4번코트'] = [(participants_1[4], participants_1[5]), (participants_1[6], participants_1[7])]
+            matches['5번코트'] = [(participants_1[8], participants_1[9]), (participants_1[10], participants_1[11])]
 
-        part_early = [m for m in members_data if m.get('참가') and m.get('일퇴')]
-        for m in part_early:
-            if m not in p2_set:
-                p2_set.append(m)
+        elif female_count == 4:
+            matches['3번코트'] = [(participants_1[0], participants_1[1]), (participants_1[2], participants_1[3])]
+            matches['4번코트'] = [(participants_1[4], participants_1[5]), (participants_1[6], participants_1[7])]
+            matches['5번코트'] = [(participants_1[8], participants_1[9]), (participants_1[10], participants_1[11])]
 
-        needed = 12 - len(p2_set)
-        if needed > 0:
-            remaining = [m for m in part_all if m not in p2_set]
-            random.shuffle(remaining)
-            p2_set.extend(remaining[:needed])
-
-        participants_2 = p2_set[:12]
-        participants_2 = sorted(participants_2, key=lambda x: x['순위'])
-
-        # 매칭 3
-        match3_set = []
-
-        # 1. 참가 + 일퇴
-        part_early = [m for m in part_all if m.get('일퇴')]
-        match3_set.extend(part_early)
-
-        # 2. 참가 + 늦참
-        part_late = [m for m in part_all if m.get('늦참') and m not in match3_set]
-        match3_set.extend(part_late)
-
-        # 3. 참가 + 매칭2 제외
-        p2_ids = set(id(m) for m in participants_2)
-        not_in_p2 = [m for m in part_all if id(m) not in p2_ids and m not in match3_set]
-        match3_set.extend(not_in_p2)
-
-        # 4. 부족한 경우 랜덤 충원
-        if len(match3_set) < 12:
-            remaining = [m for m in part_all if m not in match3_set]
-            random.shuffle(remaining)
-            match3_set.extend(remaining[:12 - len(match3_set)])
-
-        participants_3 = match3_set[:12]
-        participants_3 = sorted(participants_3, key=lambda x: x['순위'])
+        elif female_count == 5:
+            matches['3번코트'] = [(participants_1[0], participants_1[1]), (participants_1[2], participants_1[3])]
+            matches['4번코트'] = [(participants_1[4], participants_1[5]), (participants_1[6], participants_1[7])]
+            matches['5번코트'] = [(participants_1[8], participants_1[9]), (participants_1[10], participants_1[11])]
 
         return render_template(
             'members.html',
             members=members_data,
             participants_1=participants_1,
-            participants_2=participants_2,
-            participants_3=participants_3
+            matches=matches  # 대진표 추가
         )
 
     return render_template(
         'members.html',
         members=members_data,
         participants_1=[],
-        participants_2=[],
-        participants_3=[]
+        matches={}  # 대진표 초기화
     )
 
 if __name__ == "__main__":
