@@ -13,17 +13,31 @@ members_data = []
 def index():
     return render_template('upload.html')
 
+import re  # 상단에 추가 필요
+
 @app.route('/upload', methods=['POST'])
 def upload():
     file = request.files['file']
     filepath = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(filepath)
 
-    df = pd.read_excel(filepath)
+    # 엑셀의 첫 번째 열만 사용
+    df_raw = pd.read_excel(filepath, header=None, usecols=[0])
+
+    extracted_data = []
+    for row in df_raw.itertuples(index=False):
+        cell = str(row[0]).strip()
+        match = re.match(r'(\d+)\.\s*(.+)', cell)
+        if match:
+            rank = int(match.group(1))
+            name = match.group(2).strip()
+            extracted_data.append({'순위': rank, '이름': name})
+
     global members_data
-    members_data = df.to_dict(orient='records')
+    members_data = extracted_data
 
     return redirect(url_for('members'))
+
 
 @app.route('/members', methods=['GET', 'POST'])
 def members():
