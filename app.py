@@ -59,16 +59,15 @@ def members():
             member['일퇴'] = f'early_{idx}' in request.form
             member['늦참'] = f'late_{idx}' in request.form
 
-        # 매칭 1
+        # --- 매칭 1 로직 ---
         m1_early = [m for m in members_data if m.get('참가') and m.get('일퇴')]
         m1_fill = [m for m in members_data if m.get('참가') and not m.get('늦참') and m not in m1_early]
         random.shuffle(m1_fill)
         participants_1 = (m1_early + m1_fill)[:12]
         participants_1 = sorted(participants_1, key=lambda x: x['순위'])
 
-        # 매칭 2
+        # --- 매칭 2 로직 ---
         p2_set = []
-
         part_late = [m for m in members_data if m.get('참가') and m.get('늦참')]
         p2_set.extend(part_late)
 
@@ -93,60 +92,57 @@ def members():
         participants_2 = p2_set[:12]
         participants_2 = sorted(participants_2, key=lambda x: x['순위'])
 
-        # 매칭 3
+        # --- 매칭 3 로직 ---
         match3_set = []
-
-        # 1. 참가 + 일퇴
         part_early = [m for m in part_all if m.get('일퇴')]
         match3_set.extend(part_early)
-
-        # 2. 참가 + 늦참
         part_late = [m for m in part_all if m.get('늦참') and m not in match3_set]
         match3_set.extend(part_late)
-
-        # 3. 참가 + 매칭2 제외
         p2_ids = set(id(m) for m in participants_2)
         not_in_p2 = [m for m in part_all if id(m) not in p2_ids and m not in match3_set]
         match3_set.extend(not_in_p2)
-
-        # 4. 부족한 경우 랜덤 충원
         if len(match3_set) < 12:
             remaining = [m for m in part_all if m not in match3_set]
             random.shuffle(remaining)
             match3_set.extend(remaining[:12 - len(match3_set)])
-
         participants_3 = match3_set[:12]
         participants_3 = sorted(participants_3, key=lambda x: x['순위'])
 
+        # ✅ 성별 요약 계산
+        def count_gender(participants):
+            total = len(participants)
+            male = sum(1 for p in participants if p.get('성별') == '남')
+            female = sum(1 for p in participants if p.get('성별') == '여')
+            return {'total': total, 'male': male, 'female': female}
+
+        summary_1 = count_gender(participants_1)
+        summary_2 = count_gender(participants_2)
+        summary_3 = count_gender(participants_3)
+
+        # ✅ 반드시 return
         return render_template(
             'members.html',
             members=members_data,
             participants_1=participants_1,
             participants_2=participants_2,
-            participants_3=participants_3
+            participants_3=participants_3,
+            summary_1=summary_1,
+            summary_2=summary_2,
+            summary_3=summary_3
         )
 
-def count_gender(participants):
-    total = len(participants)
-    male = sum(1 for p in participants if p.get('성별') == '남')
-    female = sum(1 for p in participants if p.get('성별') == '여')
-    return {'total': total, 'male': male, 'female': female}
-
-    summary_1 = count_gender(participants_1)
-    summary_2 = count_gender(participants_2)
-    summary_3 = count_gender(participants_3)
-
-    
+    # ✅ GET 요청 시에도 return 필요
     return render_template(
-    'members.html',
-    members=members_data,
-    participants_1=participants_1,
-    participants_2=participants_2,
-    participants_3=participants_3,
-    summary_1=summary_1,
-    summary_2=summary_2,
-    summary_3=summary_3
-)
+        'members.html',
+        members=members_data,
+        participants_1=[],
+        participants_2=[],
+        participants_3=[],
+        summary_1={'total': 0, 'male': 0, 'female': 0},
+        summary_2={'total': 0, 'male': 0, 'female': 0},
+        summary_3={'total': 0, 'male': 0, 'female': 0}
+    )
+
 
 
 if __name__ == "__main__":
