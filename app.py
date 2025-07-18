@@ -127,11 +127,11 @@ def members():
         participants_3 = match3_set[:12] # 최종 12명으로 제한
         participants_3 = sorted(participants_3, key=lambda x: x['순위'])
 
-        # ✅ 성별 요약 계산 함수
+        # ✅ 성별 요약 계산 함수 (strip() 추가)
         def count_gender(participants):
             total = len(participants)
-            male = sum(1 for p in participants if p.get('성별') == '남')
-            female = sum(1 for p in participants if p.get('성별') == '여')
+            male = sum(1 for p in participants if p.get('성별', '').strip() == '남')
+            female = sum(1 for p in participants if p.get('성별', '').strip() == '여')
             return {'total': total, 'male': male, 'female': female}
 
         summary_1 = count_gender(participants_1)
@@ -140,8 +140,9 @@ def members():
 
         # 팀 매칭 로직 (매칭 1에 총 12명일 경우만 실행)
         if summary_1['total'] == 12:
-            female_members = sorted([m for m in participants_1 if m['성별'] == '여'], key=lambda x: x['순위'])
-            male_members = sorted([m for m in participants_1 if m['성별'] == '남'], key=lambda x: x['순위'])
+            # female_members와 male_members 생성 시에도 strip() 적용
+            female_members = sorted([m for m in participants_1 if m.get('성별', '').strip() == '여'], key=lambda x: x['순위'])
+            male_members = sorted([m for m in participants_1 if m.get('성별', '').strip() == '남'], key=lambda x: x['순위'])
 
             if summary_1['female'] == 5:
                 # 팀 매칭에 필요한 충분한 인원이 있는지 확인
@@ -219,17 +220,17 @@ def members():
                         {
                             'court': '3번코트',
                             'team_a': [female_members[0], male_members[0]], # 여자1위, 남자1위
-                            'team_b': [male_members[9], male_members[10]]  # 남자10위, 남자11위
+                            'team_b': [female_members[1], male_members[1]]  # 여자2위, 남자2위 (수정됨: 남자10위, 남자11위 -> 여자2위, 남자2위)
                         },
                         {
                             'court': '4번코트',
-                            'team_a': [male_members[1], male_members[8]], # 남자2위, 남자9위
-                            'team_b': [male_members[2], male_members[7]] # 남자3위, 남자8위
+                            'team_a': [male_members[2], male_members[9]], # 남자3위, 남자10위
+                            'team_b': [male_members[3], male_members[8]] # 남자4위, 남자9위
                         },
                         {
                             'court': '5번코트',
-                            'team_a': [male_members[3], male_members[6]], # 남자4위, 남자7위
-                            'team_b': [male_members[4], male_members[5]] # 남자5위, 남자6위
+                            'team_a': [male_members[4], male_members[7]], # 남자5위, 남자8위
+                            'team_b': [male_members[5], male_members[6]] # 남자6위, 남자7위
                         }
                     ]
                 else:
