@@ -9,6 +9,13 @@ UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 members_data = []
+gender_map = {
+    '장다민': '여', '양승하': '남', '류재리': '여', '우원석': '남',
+    '남상훈': '남', '강민구': '남', '임예지': '여', '이준희': '남',
+    '박대우': '남', '박소현': '여', '감사': '남', '나석훈': '남',
+    '임동민': '남', '박은지': '여', '이재현': '남', '김나연': '여',
+    '독고혁': '남', '이성훈': '남', '이종욱': '남', '테스': '남'
+}
 
 
 
@@ -31,12 +38,18 @@ def upload():
         if match:
             rank = int(match.group(1))
             name = match.group(2).strip()
-            extracted_data.append({'순위': rank, '이름': name})
+
+            # ✅ 성별 매핑 추가
+            gender = gender_map.get(name, '미정')
+
+            # ✅ 성별까지 포함해서 리스트에 저장
+            extracted_data.append({'순위': rank, '이름': name, '성별': gender})
 
     global members_data
     members_data = extracted_data
 
     return redirect(url_for('members'))
+
 
 @app.route('/members', methods=['GET', 'POST'])
 def members():
