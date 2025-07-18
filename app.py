@@ -114,7 +114,7 @@ def members():
 
 # ✅ 코트 배정 로직
 def generate_court_assignments(players, match_no):
-    assigned = set()  # 중복 배정 방지용
+    assigned = set()
     courts = {3: [], 4: [], 5: []}
 
     females = sorted([p for p in players if p['성별'] == '여'], key=lambda x: x['순위'])
@@ -137,7 +137,6 @@ def generate_court_assignments(players, match_no):
         fem_selected = pick_from_list(fem_list, 2)
         mal_selected = pick_from_list(mal_list, 2)
         if len(fem_selected) < 2 or len(mal_selected) < 2:
-            # 부족하면 성별 무관 복식 fallback
             remain = pick_from_list(fem_list + mal_list, 4)
             return make_teams(remain)
         else:
@@ -145,35 +144,36 @@ def generate_court_assignments(players, match_no):
 
     if match_no == 1:
         if len(females) >= 5:
-            # 3번 여자복식
+            # 3번: 여자복식 (여자 4명)
             c3 = pick_from_list(females, 4)
-            # 4번 남자복식
+            # 4번: 남자복식 (남자 4명)
             c4 = pick_from_list(males, 4)
-            # 5번 여자 1위 포함 + 남자 3명 혼합 복식 (여자복식 아님)
-            c5 = []
-            top_fem = pick_from_list(females, 1)  # 여자 1위 포함
-            c5.extend(top_fem)
-            c5.extend(pick_from_list(males, 3))
-            if len(c5) < 4:  # 부족시 여자복식 fallback
-                c5.extend(pick_from_list(females, 4 - len(c5)))
+            # 5번: 여자 1위 포함 + 남자 3명 혼합 복식
+            team5 = []
+            team5 += pick_from_list(females[:1], 1)  # 여자 1위 포함
+            team5 += pick_from_list(males, 3)
+            # 부족하면 여자 추가
+            if len(team5) < 4:
+                team5 += pick_from_list(females, 4 - len(team5))
             courts[3] = make_teams(c3)
             courts[4] = make_teams(c4)
-            courts[5] = make_teams(c5)
+            courts[5] = make_teams(team5)
         elif len(females) == 4:
-            c3 = pick_from_list(females, 4)
-            c4 = pick_from_list(males, 4)
-            c5 = pick_from_list(males, 4)
+            c3 = pick_from_list(females, 4)  # 여자복식
+            c4 = pick_from_list(males, 4)    # 남자복식
+            c5 = pick_from_list(males, 4)    # 남자복식
             courts[3] = make_teams(c3)
             courts[4] = make_teams(c4)
             courts[5] = make_teams(c5)
         elif len(females) in [2, 3]:
-            c3 = make_mixed_teams(females, males)
-            c4 = pick_from_list(males, 4)
-            c5 = pick_from_list(players, 4)
+            c3 = make_mixed_teams(females, males)  # 혼복
+            c4 = pick_from_list(males, 4)           # 남자복식
+            c5 = pick_from_list(players, 4)          # 성별무관 복식
             courts[3] = c3
             courts[4] = make_teams(c4)
             courts[5] = make_teams(c5)
         else:
+            # 여자 1명 이하: 전부 성별무관 복식
             c3 = pick_from_list(players, 4)
             c4 = pick_from_list(players, 4)
             c5 = pick_from_list(players, 4)
