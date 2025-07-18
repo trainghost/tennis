@@ -17,27 +17,6 @@ gender_map = {
     '독고혁': '남', '이성훈': '남', '이종욱': '남', '테스': '남'
 }
 
-females = [m for m in participants if m['성별'] == '여']
-males = [m for m in participants if m['성별'] == '남']
-
-females.sort(key=lambda x: x['순위'])
-males.sort(key=lambda x: x['순위'])
-
-court_3 = {
-    "팀A": [females[1]['이름'], females[4]['이름']],  # 여자 2위, 5위
-    "팀B": [females[2]['이름'], females[3]['이름']]   # 여자 3위, 4위
-}
-
-court_4 = {
-    "팀A": [females[0]['이름'], males[0]['이름']],   # 여자 1위, 남자 1위
-    "팀B": [males[5]['이름'], males[6]['이름']]      # 남자 6위, 7위
-}
-
-court_5 = {
-    "팀A": [males[1]['이름'], males[4]['이름']],      # 남자 2위, 5위
-    "팀B": [males[2]['이름'], males[3]['이름']]       # 남자 3위, 4위
-}
-
 
 @app.route('/')
 def index():
