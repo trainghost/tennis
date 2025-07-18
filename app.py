@@ -138,69 +138,153 @@ def members():
         summary_2 = count_gender(participants_2)
         summary_3 = count_gender(participants_3)
 
-        # ✅ 매칭 1에 여자 5명, 총 12명일 경우 팀 매칭 로직
-        if summary_1['total'] == 12 and summary_1['female'] == 5:
+        # 팀 매칭 로직 (매칭 1에 총 12명일 경우만 실행)
+        if summary_1['total'] == 12:
             female_members = sorted([m for m in participants_1 if m['성별'] == '여'], key=lambda x: x['순위'])
             male_members = sorted([m for m in participants_1 if m['성별'] == '남'], key=lambda x: x['순위'])
 
-            # 팀 매칭에 필요한 충분한 인원이 있는지 확인
-            if len(female_members) >= 5 and len(male_members) >= 7:
-                # 이미지에 나온 순위를 기준으로 직접 매핑 (0-기반 인덱스 사용)
-                # female_members: [여자1위, 여자2위, 여자3위, 여자4위, 여자5위]
-                # male_members: [남자1위, 남자2위, 남자3위, 남자4위, 남자5위, 남자6위, 남자7위]
-                team_match_results = [
-                    {
-                        'court': '3번코트',
-                        'team_a': [female_members[1], female_members[4]], # 여자2위, 여자5위
-                        'team_b': [female_members[2], female_members[3]]  # 여자3위, 여자4위
-                    },
-                    {
-                        'court': '4번코트',
-                        'team_a': [female_members[0], male_members[0]], # 여자1위, 남자1위
-                        'team_b': [male_members[5], male_members[6]] # 남자6위, 남자7위
-                    },
-                    {
-                        'court': '5번코트',
-                        'team_a': [male_members[1], male_members[4]], # 남자2위, 남자5위
-                        'team_b': [male_members[2], male_members[3]] # 남자3위, 남자4위
-                    }
-                ]
+            if summary_1['female'] == 5:
+                # 팀 매칭에 필요한 충분한 인원이 있는지 확인
+                if len(female_members) >= 5 and len(male_members) >= 7:
+                    team_match_results = [
+                        {
+                            'court': '3번코트',
+                            'team_a': [female_members[1], female_members[4]], # 여자2위, 여자5위
+                            'team_b': [female_members[2], female_members[3]]  # 여자3위, 여자4위
+                        },
+                        {
+                            'court': '4번코트',
+                            'team_a': [female_members[0], male_members[0]], # 여자1위, 남자1위
+                            'team_b': [male_members[5], male_members[6]] # 남자6위, 남자7위
+                        },
+                        {
+                            'court': '5번코트',
+                            'team_a': [male_members[1], male_members[4]], # 남자2위, 남자5위
+                            'team_b': [male_members[2], male_members[3]] # 남자3위, 남자4위
+                        }
+                    ]
+                else:
+                    print("Warning: Not enough female/male members for specific team matching (5F/7M) in Match 1.")
+                    team_match_results = []
+            elif summary_1['female'] == 4:
+                # 팀 매칭에 필요한 충분한 인원 (여자 4명, 남자 8명)이 있는지 확인
+                if len(female_members) >= 4 and len(male_members) >= 8:
+                    team_match_results = [
+                        {
+                            'court': '3번코트',
+                            'team_a': [female_members[0], female_members[3]], # 여자1위, 여자4위
+                            'team_b': [female_members[1], female_members[2]]  # 여자2위, 여자3위
+                        },
+                        {
+                            'court': '4번코트',
+                            'team_a': [male_members[0], male_members[7]], # 남자1위, 남자8위
+                            'team_b': [male_members[1], male_members[6]] # 남자2위, 남자7위
+                        },
+                        {
+                            'court': '5번코트',
+                            'team_a': [male_members[2], male_members[5]], # 남자3위, 남자6위
+                            'team_b': [male_members[3], male_members[4]] # 남자4위, 남자5위
+                        }
+                    ]
+                else:
+                    print("Warning: Not enough female/male members for specific team matching (4F/8M) in Match 1.")
+                    team_match_results = []
+            elif summary_1['female'] == 3:
+                # 팀 매칭에 필요한 충분한 인원 (여자 3명, 남자 9명)이 있는지 확인
+                if len(female_members) >= 3 and len(male_members) >= 9:
+                    team_match_results = [
+                        {
+                            'court': '3번코트',
+                            'team_a': [female_members[0], male_members[0]], # 여자1위, 남자1위
+                            'team_b': [male_members[7], male_members[8]]  # 남자8위, 남자9위
+                        },
+                        {
+                            'court': '4번코트',
+                            'team_a': [female_members[1], male_members[1]], # 여자2위, 남자2위
+                            'team_b': [female_members[2], male_members[2]] # 여자3위, 남자3위
+                        },
+                        {
+                            'court': '5번코트',
+                            'team_a': [male_members[3], male_members[6]], # 남자4위, 남자7위
+                            'team_b': [male_members[4], male_members[5]] # 남자5위, 남자6위
+                        }
+                    ]
+                else:
+                    print("Warning: Not enough female/male members for specific team matching (3F/9M) in Match 1.")
+                    team_match_results = []
+            elif summary_1['female'] == 2:
+                # 팀 매칭에 필요한 충분한 인원 (여자 2명, 남자 10명)이 있는지 확인
+                if len(female_members) >= 2 and len(male_members) >= 10:
+                    team_match_results = [
+                        {
+                            'court': '3번코트',
+                            'team_a': [female_members[0], male_members[0]], # 여자1위, 남자1위
+                            'team_b': [male_members[9], male_members[10]]  # 남자10위, 남자11위
+                        },
+                        {
+                            'court': '4번코트',
+                            'team_a': [male_members[1], male_members[8]], # 남자2위, 남자9위
+                            'team_b': [male_members[2], male_members[7]] # 남자3위, 남자8위
+                        },
+                        {
+                            'court': '5번코트',
+                            'team_a': [male_members[3], male_members[6]], # 남자4위, 남자7위
+                            'team_b': [male_members[4], male_members[5]] # 남자5위, 남자6위
+                        }
+                    ]
+                else:
+                    print("Warning: Not enough female/male members for specific team matching (2F/10M) in Match 1.")
+                    team_match_results = []
+            elif summary_1['female'] == 1:
+                # 팀 매칭에 필요한 충분한 인원 (여자 1명, 남자 11명)이 있는지 확인
+                if len(female_members) >= 1 and len(male_members) >= 11:
+                    team_match_results = [
+                        {
+                            'court': '3번코트',
+                            'team_a': [female_members[0], male_members[0]], # 여자1위, 남자1위
+                            'team_b': [male_members[9], male_members[10]]  # 남자10위, 남자11위
+                        },
+                        {
+                            'court': '4번코트',
+                            'team_a': [male_members[2], male_members[9]], # 남자3위, 남자10위
+                            'team_b': [male_members[3], male_members[8]] # 남자4위, 남자9위
+                        },
+                        {
+                            'court': '5번코트',
+                            'team_a': [male_members[4], male_members[7]], # 남자5위, 남자8위
+                            'team_b': [male_members[5], male_members[6]] # 남자6위, 남자7위
+                        }
+                    ]
+                else:
+                    print("Warning: Not enough female/male members for specific team matching (1F/11M) in Match 1.")
+                    team_match_results = []
+            elif summary_1['female'] == 0:
+                # 팀 매칭에 필요한 충분한 인원 (여자 0명, 남자 12명)이 있는지 확인
+                if len(female_members) == 0 and len(male_members) >= 12:
+                    team_match_results = [
+                        {
+                            'court': '3번코트',
+                            'team_a': [male_members[0], male_members[11]], # 남자1위, 남자12위
+                            'team_b': [male_members[1], male_members[10]]  # 남자2위, 남자11위
+                        },
+                        {
+                            'court': '4번코트',
+                            'team_a': [male_members[2], male_members[9]], # 남자3위, 남자10위
+                            'team_b': [male_members[3], male_members[8]] # 남자4위, 남자9위
+                        },
+                        {
+                            'court': '5번코트',
+                            'team_a': [male_members[4], male_members[7]], # 남자5위, 남자8위
+                            'team_b': [male_members[5], male_members[6]] # 남자6위, 남자7위
+                        }
+                    ]
+                else:
+                    print("Warning: Not enough male members for specific team matching (0F/12M) in Match 1.")
+                    team_match_results = []
             else:
-                # 조건은 맞지만, 특정 인덱스의 멤버가 부족할 경우
-                print("Warning: Not enough female/male members for specific team matching (5F/7M) in Match 1.")
-                team_match_results = []
-        # ✅ 매칭 1에 여자 4명, 총 12명일 경우 팀 매칭 로직 추가
-        elif summary_1['total'] == 12 and summary_1['female'] == 4:
-            female_members = sorted([m for m in participants_1 if m['성별'] == '여'], key=lambda x: x['순위'])
-            male_members = sorted([m for m in participants_1 if m['성별'] == '남'], key=lambda x: x['순위'])
-
-            # 팀 매칭에 필요한 충분한 인원 (여자 4명, 남자 8명)이 있는지 확인
-            if len(female_members) >= 4 and len(male_members) >= 8:
-                # 이미지에 나온 순위를 기준으로 직접 매핑 (0-기반 인덱스 사용)
-                # female_members: [여자1위, 여자2위, 여자3위, 여자4위]
-                # male_members: [남자1위, 남자2위, 남자3위, 남자4위, 남자5위, 남자6위, 남자7위, 남자8위]
-                team_match_results = [
-                    {
-                        'court': '3번코트',
-                        'team_a': [female_members[0], female_members[3]], # 여자1위, 여자4위
-                        'team_b': [female_members[1], female_members[2]]  # 여자2위, 여자3위
-                    },
-                    {
-                        'court': '4번코트',
-                        'team_a': [male_members[0], male_members[7]], # 남자1위, 남자8위
-                        'team_b': [male_members[1], male_members[6]] # 남자2위, 남자7위
-                    },
-                    {
-                        'court': '5번코트',
-                        'team_a': [male_members[2], male_members[5]], # 남자3위, 남자6위
-                        'team_b': [male_members[3], male_members[4]] # 남자4위, 남자5위
-                    }
-                ]
-            else:
-                print("Warning: Not enough female/male members for specific team matching (4F/8M) in Match 1.")
-                team_match_results = []
+                team_match_results = [] # 다른 조건이 맞지 않으면 팀 매칭 결과는 비워둠
         else:
-            team_match_results = [] # 다른 조건이 맞지 않으면 팀 매칭 결과는 비워둠
+            team_match_results = [] # 총 인원이 12명이 아니면 팀 매칭 결과는 비워둠
 
         # ✅ 반드시 return
         return render_template(
