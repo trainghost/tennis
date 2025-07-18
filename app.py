@@ -124,6 +124,8 @@ def assign_courts(players, match_no):
         return picked
 
     def make_teams(four):
+        if len(four) < 4:
+            return []  # 4명 미만이면 빈 리스트 반환, 혹은 다른 방식으로 처리
         sorted_players = sorted(four, key=lambda x: x['순위'])
         return [[sorted_players[0], sorted_players[3]], [sorted_players[1], sorted_players[2]]]
 
@@ -200,11 +202,8 @@ def assign_courts(players, match_no):
             team_4 = pick(selected_males, 4)
             courts[4] = make_teams(team_4)
 
-            # 5번 코트: 남자복식 (순위가 제일 높은 사람과 제일 낮은 사람이 팀)
-            team_5 = pick(selected_males, 4)
-            courts[5] = make_teams(team_5)
+            # 5번 코트: 남자복식 (순위
 
-    return courts
 
 
 
