@@ -167,10 +167,40 @@ def members():
                 ]
             else:
                 # 조건은 맞지만, 특정 인덱스의 멤버가 부족할 경우
-                print("Warning: Not enough female/male members for specific team matching in Match 1.")
+                print("Warning: Not enough female/male members for specific team matching (5F/7M) in Match 1.")
+                team_match_results = []
+        # ✅ 매칭 1에 여자 4명, 총 12명일 경우 팀 매칭 로직 추가
+        elif summary_1['total'] == 12 and summary_1['female'] == 4:
+            female_members = sorted([m for m in participants_1 if m['성별'] == '여'], key=lambda x: x['순위'])
+            male_members = sorted([m for m in participants_1 if m['성별'] == '남'], key=lambda x: x['순위'])
+
+            # 팀 매칭에 필요한 충분한 인원 (여자 4명, 남자 8명)이 있는지 확인
+            if len(female_members) >= 4 and len(male_members) >= 8:
+                # 이미지에 나온 순위를 기준으로 직접 매핑 (0-기반 인덱스 사용)
+                # female_members: [여자1위, 여자2위, 여자3위, 여자4위]
+                # male_members: [남자1위, 남자2위, 남자3위, 남자4위, 남자5위, 남자6위, 남자7위, 남자8위]
+                team_match_results = [
+                    {
+                        'court': '3번코트',
+                        'team_a': [female_members[0], female_members[3]], # 여자1위, 여자4위
+                        'team_b': [female_members[1], female_members[2]]  # 여자2위, 여자3위
+                    },
+                    {
+                        'court': '4번코트',
+                        'team_a': [male_members[0], male_members[7]], # 남자1위, 남자8위
+                        'team_b': [male_members[1], male_members[6]] # 남자2위, 남자7위
+                    },
+                    {
+                        'court': '5번코트',
+                        'team_a': [male_members[2], male_members[5]], # 남자3위, 남자6위
+                        'team_b': [male_members[3], male_members[4]] # 남자4위, 남자5위
+                    }
+                ]
+            else:
+                print("Warning: Not enough female/male members for specific team matching (4F/8M) in Match 1.")
                 team_match_results = []
         else:
-            team_match_results = [] # 조건이 맞지 않으면 팀 매칭 결과는 비워둠
+            team_match_results = [] # 다른 조건이 맞지 않으면 팀 매칭 결과는 비워둠
 
         # ✅ 반드시 return
         return render_template(
