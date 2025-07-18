@@ -86,9 +86,9 @@ def members():
         participants_3 = sorted(p3_set[:12], key=lambda x: x['순위'])
 
         # ✅ 코트 배정
-        courts_1 = generate_court_assignments(participants_1, 1)
-        courts_2 = generate_court_assignments(participants_2, 2)
-        courts_3 = generate_court_assignments(participants_3, 3)
+        courts_1 = assign_courts(participants_1, 1)
+        courts_2 = assign_courts(participants_2, 2)
+        courts_3 = assign_courts(participants_3, 3)
 
         return render_template(
             'members.html',
