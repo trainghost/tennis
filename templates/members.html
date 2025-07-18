@@ -55,6 +55,39 @@
 </ul>
 <p><strong>요약:</strong> 총 {{ summary_3.total }}명 (여자 {{ summary_3.female }}명 / 남자 {{ summary_3.male }}명)</p>
 
+<h3>코트별 매칭 (여자 5명 기준)</h3>
+<table border="1" style="border-collapse: collapse; text-align: center;">
+    <tr>
+        <th>코트</th>
+        <th colspan="2">팀 A</th>
+        <th>vs</th>
+        <th colspan="2">팀 B</th>
+    </tr>
+    <tr>
+        <td>3번 코트</td>
+        <td>{{ court_3['팀A'][0] }}</td>
+        <td>{{ court_3['팀A'][1] }}</td>
+        <td>vs</td>
+        <td>{{ court_3['팀B'][0] }}</td>
+        <td>{{ court_3['팀B'][1] }}</td>
+    </tr>
+    <tr>
+        <td>4번 코트</td>
+        <td>{{ court_4['팀A'][0] }}</td>
+        <td>{{ court_4['팀A'][1] }}</td>
+        <td>vs</td>
+        <td>{{ court_4['팀B'][0] }}</td>
+        <td>{{ court_4['팀B'][1] }}</td>
+    </tr>
+    <tr>
+        <td>5번 코트</td>
+        <td>{{ court_5['팀A'][0] }}</td>
+        <td>{{ court_5['팀A'][1] }}</td>
+        <td>vs</td>
+        <td>{{ court_5['팀B'][0] }}</td>
+        <td>{{ court_5['팀B'][1] }}</td>
+    </tr>
+</table>
 
 
 </body>
