@@ -47,11 +47,9 @@ def upload():
     return redirect(url_for('members'))
 
 
-# ✅ 추가된 팀 생성 함수
 def generate_teams_for_group(participants_list):
     """
-    12명의 참여자 리스트를 받아 성별에 따라 팀을 구성하고 코트별 매칭을 반환합니다.
-    혼성 조를 우선으로 구성하며, 남은 인원으로 동성 조를 만듭니다.
+    12명의 참여자 리스트와 여성 인원 수에 따라 특정 팀 구성을 반환합니다.
     """
     if len(participants_list) != 12:
         return [] # 12명이 아니면 팀 생성 안 함
@@ -59,42 +57,133 @@ def generate_teams_for_group(participants_list):
     female_members = sorted([m for m in participants_list if m['성별'] == '여'], key=lambda x: x['순위'])
     male_members = sorted([m for m in participants_list if m['성별'] == '남'], key=lambda x: x['순위'])
 
-    all_pairs = []
+    female_count = len(female_members)
+    male_count = len(male_members)
 
-    # 1. 혼성 조 (남녀 각각 1명) 우선 구성
-    num_mixed_pairs = min(len(female_members), len(male_members))
-    for _ in range(num_mixed_pairs):
-        all_pairs.append([female_members.pop(0), male_members.pop(0)])
+    team_match_results = []
+
+    # 여성 5명 (남성 7명) - 첫 번째 이미지 기반
+    if female_count == 5 and male_count == 7:
+        if len(female_members) >= 5 and len(male_members) >= 7:
+            team_match_results = [
+                {
+                    'court': '3번 코트',
+                    'team_a': [female_members[0], male_members[0]], # 여자1위, 남자1위
+                    'team_b': [female_members[1], male_members[1]]  # 여자2위, 남자2위
+                },
+                {
+                    'court': '4번 코트',
+                    'team_a': [female_members[2], male_members[2]], # 여자3위, 남자3위
+                    'team_b': [female_members[3], male_members[3]]  # 여자4위, 남자4위
+                },
+                {
+                    'court': '5번 코트',
+                    'team_a': [female_members[4], male_members[4]], # 여자5위, 남자5위
+                    'team_b': [male_members[5], male_members[6]]    # 남자6위, 남자7위
+                }
+            ]
+    # 여성 4명 (남성 8명) - 두 번째 이미지 기반
+    elif female_count == 4 and male_count == 8:
+        if len(female_members) >= 4 and len(male_members) >= 8:
+            team_match_results = [
+                {
+                    'court': '3번 코트',
+                    'team_a': [female_members[0], female_members[3]], # 여자1위, 여자4위
+                    'team_b': [female_members[1], female_members[2]]  # 여자2위, 여자3위
+                },
+                {
+                    'court': '4번 코트',
+                    'team_a': [male_members[0], male_members[7]], # 남자1위, 남자8위
+                    'team_b': [male_members[1], male_members[6]]  # 남자2위, 남자7위
+                },
+                {
+                    'court': '5번 코트',
+                    'team_a': [male_members[2], male_members[5]], # 남자3위, 남자6위
+                    'team_b': [male_members[3], male_members[4]]  # 남자4위, 남자5위
+                }
+            ]
+    # 여성 3명 (남성 9명) - 다섯 번째 이미지 기반
+    elif female_count == 3 and male_count == 9:
+        if len(female_members) >= 3 and len(male_members) >= 9:
+            team_match_results = [
+                {
+                    'court': '3번 코트',
+                    'team_a': [female_members[0], male_members[0]], # 여자1위, 남자1위
+                    'team_b': [male_members[7], male_members[8]]    # 남자8위, 남자9위
+                },
+                {
+                    'court': '4번 코트',
+                    'team_a': [female_members[1], male_members[1]], # 여자2위, 남자2위
+                    'team_b': [female_members[2], male_members[2]]  # 여자3위, 남자3위
+                },
+                {
+                    'court': '5번 코트',
+                    'team_a': [male_members[3], male_members[6]], # 남자4위, 남자7위
+                    'team_b': [male_members[4], male_members[5]]  # 남자5위, 남자6위
+                }
+            ]
+    # ✅ 여성 2명 (남성 10명) - 새로운 이미지 기반으로 업데이트
+    elif female_count == 2 and male_count == 10:
+        if len(female_members) >= 2 and len(male_members) >= 10:
+            team_match_results = [
+                {
+                    'court': '3번 코트',
+                    'team_a': [female_members[0], male_members[0]], # 여자1위, 남자1위
+                    'team_b': [female_members[1], male_members[1]]  # 여자2위, 남자2위
+                },
+                {
+                    'court': '4번 코트',
+                    'team_a': [male_members[2], male_members[9]], # 남자3위, 남자10위
+                    'team_b': [male_members[3], male_members[8]]  # 남자4위, 남자9위
+                },
+                {
+                    'court': '5번 코트',
+                    'team_a': [male_members[4], male_members[7]], # 남자5위, 남자8위
+                    'team_b': [male_members[5], male_members[6]]  # 남자6위, 남자7위
+                }
+            ]
+    # 여성 1명 (남성 11명) - 네 번째 이미지 기반
+    elif female_count == 1 and male_count == 11:
+        if len(female_members) >= 1 and len(male_members) >= 11:
+            team_match_results = [
+                {
+                    'court': '3번 코트',
+                    'team_a': [female_members[0], male_members[0]], # 여자1위, 남자1위
+                    'team_b': [male_members[9], male_members[10]]   # 남자10위, 남자11위
+                },
+                {
+                    'court': '4번 코트',
+                    'team_a': [male_members[1], male_members[8]], # 남자2위, 남자9위
+                    'team_b': [male_members[2], male_members[7]]  # 남자3위, 남자8위
+                },
+                {
+                    'court': '5번 코트',
+                    'team_a': [male_members[3], male_members[6]], # 남자4위, 남자7위
+                    'team_b': [male_members[4], male_members[5]]  # 남자5위, 남자6위
+                }
+            ]
+    # 여성 0명 (남성 12명) - 세 번째 이미지 기반
+    elif female_count == 0 and male_count == 12:
+        if len(male_members) >= 12:
+            team_match_results = [
+                {
+                    'court': '3번 코트',
+                    'team_a': [male_members[0], male_members[11]], # 남자1위, 남자12위
+                    'team_b': [male_members[1], male_members[10]]  # 남자2위, 남자11위
+                },
+                {
+                    'court': '4번 코트',
+                    'team_a': [male_members[2], male_members[9]], # 남자3위, 남자10위
+                    'team_b': [male_members[3], male_members[8]]  # 남자4위, 남자9위
+                },
+                {
+                    'court': '5번 코트',
+                    'team_a': [male_members[4], male_members[7]], # 남자5위, 남자8위
+                    'team_b': [male_members[5], male_members[6]]  # 남자6위, 남자7위
+                }
+            ]
     
-    # 2. 남은 여성 멤버들로 여성 조 (여녀 각각 1명) 구성
-    while len(female_members) >= 2:
-        all_pairs.append([female_members.pop(0), female_members.pop(0)])
-
-    # 3. 남은 남성 멤버들로 남성 조 (남남 각각 1명) 구성
-    while len(male_members) >= 2:
-        all_pairs.append([male_members.pop(0), male_members.pop(0)])
-
-    # 4. 모든 조가 6개(12명) 인지 확인
-    if len(all_pairs) != 6:
-        return [] # 팀 구성 오류 또는 12명 아닌 경우
-
-    random.shuffle(all_pairs) # 조를 무작위로 섞어서 코트 배정의 다양성 확보
-
-    # 5. 조를 코트에 배정 (3개 코트, 각 코트 2개 조 = 4명)
-    teams_on_courts = []
-    for i in range(3): # 3번, 4번, 5번 코트
-        if len(all_pairs) >= 2:
-            team_a = all_pairs.pop(0) # 첫 번째 조
-            team_b = all_pairs.pop(0) # 두 번째 조
-            teams_on_courts.append({
-                'court': f'{i+3}번 코트',
-                'team_a': team_a,
-                'team_b': team_b
-            })
-        else:
-            break # 남은 조가 부족하면 중단
-
-    return teams_on_courts
+    return team_match_results
 
 
 @app.route('/members', methods=['GET', 'POST'])
@@ -114,8 +203,8 @@ def members():
     if request.method == 'POST':
         for idx, member in enumerate(members_data):
             member['참가'] = f'participate_{idx}' in request.form
-            member['일퇴'] = f'early_{idx}\' in request.form
-            member['늦참'] = f'late_{idx}\' in request.form
+            member['일퇴'] = f'early_{idx}' in request.form
+            member['늦참'] = f'late_{idx}' in request.form
 
         # --- 매칭 1 로직 (기존과 동일) ---
         m1_early = [m for m in members_data if m.get('참가') and m.get('일퇴')]
