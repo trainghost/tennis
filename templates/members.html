@@ -10,6 +10,7 @@
             <tr>
                 <th>이름</th>
                 <th>순위</th>
+                <th>성별</th>
                 <th>참가</th>
                 <th>일퇴</th>
                 <th>늦참</th>
@@ -47,65 +48,6 @@
         <li>{{ member['이름'] }} (순위: {{ member['순위'] }})</li>
         {% endfor %}
     </ul>
-    <h3>대진표</h3>
-
-<!-- 3번 코트 대진 -->
-<h4>3번 코트: 여자복식/혼복</h4>
-<table border="1">
-    <tr>
-        <th>팀</th>
-        <th>선수 1</th>
-        <th>선수 2</th>
-        <th>순위 합</th>
-    </tr>
-    {% for team in court_3 %}
-    <tr>
-        <td>{{ loop.index }}</td>
-        <td>{{ team[0]['이름'] }} (순위: {{ team[0]['순위'] }})</td>
-        <td>{{ team[1]['이름'] }} (순위: {{ team[1]['순위'] }})</td>
-        <td>{{ team[0]['순위'] + team[1]['순위'] }}</td>
-    </tr>
-    {% endfor %}
-</table>
-
-<!-- 4번 코트 대진 -->
-<h4>4번 코트: 남자복식</h4>
-<table border="1">
-    <tr>
-        <th>팀</th>
-        <th>선수 1</th>
-        <th>선수 2</th>
-        <th>순위 합</th>
-    </tr>
-    {% for team in court_4 %}
-    <tr>
-        <td>{{ loop.index }}</td>
-        <td>{{ team[0]['이름'] }} (순위: {{ team[0]['순위'] }})</td>
-        <td>{{ team[1]['이름'] }} (순위: {{ team[1]['순위'] }})</td>
-        <td>{{ team[0]['순위'] + team[1]['순위'] }}</td>
-    </tr>
-    {% endfor %}
-</table>
-
-<!-- 5번 코트 대진 -->
-<h4>5번 코트: 복식</h4>
-<table border="1">
-    <tr>
-        <th>팀</th>
-        <th>선수 1</th>
-        <th>선수 2</th>
-        <th>순위 합</th>
-    </tr>
-    {% for team in court_5 %}
-    <tr>
-        <td>{{ loop.index }}</td>
-        <td>{{ team[0]['이름'] }} (순위: {{ team[0]['순위'] }})</td>
-        <td>{{ team[1]['이름'] }} (순위: {{ team[1]['순위'] }})</td>
-        <td>{{ team[0]['순위'] + team[1]['순위'] }}</td>
-    </tr>
-    {% endfor %}
-</table>
-
 
 
 </body>
