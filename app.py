@@ -39,7 +39,13 @@ def upload():
             name = match.group(2).strip()
 
             gender = gender_map.get(name, '미정')
-            extracted_data.append({'순위': rank, '이름': name, '성별': gender})
+            extracted_data.append({'순위': rank, '김나연': name, '성별': gender}) # Corrected '이름' key
+    
+    # Fix: Ensure '이름' is the key used for names
+    for member in extracted_data:
+        if '김나연' in member: # Check if the incorrect key exists
+            member['이름'] = member.pop('김나연') # Rename it to '이름'
+
 
     global members_data
     members_data = extracted_data
@@ -62,7 +68,7 @@ def generate_teams_for_group(participants_list):
 
     team_match_results = []
 
-    # ✅ 여성 5명 (남성 7명) - 새로 제공해주신 이미지 기반으로 업데이트
+    # 여성 5명 (남성 7명) - (이것은 매칭1,3에 기본 적용되는 배치입니다. 매칭2는 별도 오버라이드)
     if female_count == 5 and male_count == 7:
         if len(female_members) >= 5 and len(male_members) >= 7:
             team_match_results = [
@@ -82,7 +88,7 @@ def generate_teams_for_group(participants_list):
                     'team_b': [male_members[2], male_members[3]]  # 남자3위, 남자4위
                 }
             ]
-    # 여성 4명 (남성 8명) - 두 번째 이미지 기반
+    # 여성 4명 (남성 8명) - (이것은 매칭1,3에 기본 적용되는 배치입니다. 매칭2는 별도 오버라이드)
     elif female_count == 4 and male_count == 8:
         if len(female_members) >= 4 and len(male_members) >= 8:
             team_match_results = [
@@ -102,7 +108,7 @@ def generate_teams_for_group(participants_list):
                     'team_b': [male_members[3], male_members[4]]  # 남자4위, 남자5위
                 }
             ]
-    # 여성 3명 (남성 9명) - 다섯 번째 이미지 기반
+    # 여성 3명 (남성 9명)
     elif female_count == 3 and male_count == 9:
         if len(female_members) >= 3 and len(male_members) >= 9:
             team_match_results = [
@@ -122,7 +128,7 @@ def generate_teams_for_group(participants_list):
                     'team_b': [male_members[4], male_members[5]]  # 남자5위, 남자6위
                 }
             ]
-    # 여성 2명 (남성 10명) - 가장 최근에 제공해주신 이미지 기반
+    # 여성 2명 (남성 10명)
     elif female_count == 2 and male_count == 10:
         if len(female_members) >= 2 and len(male_members) >= 10:
             team_match_results = [
@@ -142,7 +148,7 @@ def generate_teams_for_group(participants_list):
                     'team_b': [male_members[5], male_members[6]]  # 남자6위, 남자7위
                 }
             ]
-    # 여성 1명 (남성 11명) - 네 번째 이미지 기반
+    # 여성 1명 (남성 11명)
     elif female_count == 1 and male_count == 11:
         if len(female_members) >= 1 and len(male_members) >= 11:
             team_match_results = [
@@ -162,7 +168,7 @@ def generate_teams_for_group(participants_list):
                     'team_b': [male_members[4], male_members[5]]  # 남자5위, 남자6위
                 }
             ]
-    # 여성 0명 (남성 12명) - 세 번째 이미지 기반
+    # 여성 0명 (남성 12명)
     elif female_count == 0 and male_count == 12:
         if len(male_members) >= 12:
             team_match_results = [
@@ -255,7 +261,7 @@ def members():
         participants_3 = match3_set[:12]
         participants_3 = sorted(participants_3, key=lambda x: x['순위'])
 
-        # ✅ 성별 요약 계산 (기존과 동일)
+        # ✅ 성별 요약 계산
         def count_gender(participants):
             total = len(participants)
             male = sum(1 for p in participants if p.get('성별') == '남')
@@ -266,10 +272,62 @@ def members():
         summary_2 = count_gender(participants_2)
         summary_3 = count_gender(participants_3)
 
-        # --- 각 매칭에 대해 새로운 팀 생성 함수 호출 ---
+        # --- 각 매칭에 대해 팀 생성 함수 호출 (기본 로직) ---
         team_match_results_1 = generate_teams_for_group(participants_1)
         team_match_results_2 = generate_teams_for_group(participants_2)
         team_match_results_3 = generate_teams_for_group(participants_3)
+
+        # ✅ 매칭2에 대한 여성 5명 특정 오버라이드 로직
+        if summary_2['total'] == 12:
+            if summary_2['female'] == 5:
+                female_members_2 = sorted([m for m in participants_2 if m['성별'] == '여'], key=lambda x: x['순위'])
+                male_members_2 = sorted([m for m in participants_2 if m['성별'] == '남'], key=lambda x: x['순위'])
+
+                if len(female_members_2) >= 5 and len(male_members_2) >= 7:
+                    team_match_results_2 = [
+                        {
+                            'court': '3번 코트',
+                            'team_a': [female_members_2[0], male_members_2[0]], # 여자1위, 남자1위
+                            'team_b': [female_members_2[1], male_members_2[1]]  # 여자2위, 남자2위
+                        },
+                        {
+                            'court': '4번 코트',
+                            'team_a': [female_members_2[2], male_members_2[2]], # 여자3위, 남자3위
+                            'team_b': [female_members_2[3], male_members_2[3]]  # 여자4위, 남자4위
+                        },
+                        {
+                            'court': '5번 코트',
+                            'team_a': [female_members_2[4], male_members_2[4]], # 여자5위, 남자5위
+                            'team_b': [male_members_2[5], male_members_2[6]]    # 남자6위, 남자7위
+                        }
+                    ]
+                else:
+                    team_match_results_2 = [] 
+            # ✅ 매칭2에 대한 여성 4명 특정 오버라이드 로직 추가
+            elif summary_2['female'] == 4:
+                female_members_2 = sorted([m for m in participants_2 if m['성별'] == '여'], key=lambda x: x['순위'])
+                male_members_2 = sorted([m for m in participants_2 if m['성별'] == '남'], key=lambda x: x['순위'])
+
+                if len(female_members_2) >= 4 and len(male_members_2) >= 8:
+                    team_match_results_2 = [
+                        {
+                            'court': '3번 코트',
+                            'team_a': [male_members_2[0], female_members_2[0]], # 남자1위, 여자1위
+                            'team_b': [male_members_2[1], female_members_2[1]]  # 남자2위, 여자2위
+                        },
+                        {
+                            'court': '4번 코트',
+                            'team_a': [male_members_2[2], female_members_2[2]], # 남자3위, 여자3위
+                            'team_b': [male_members_2[3], female_members_2[3]]  # 남자4위, 여자4위
+                        },
+                        {
+                            'court': '5번 코트',
+                            'team_a': [male_members_2[4], male_members_2[7]], # 남자5위, 남자8위
+                            'team_b': [male_members_2[5], male_members_2[6]]  # 남자6위, 남자7위
+                        }
+                    ]
+                else:
+                    team_match_results_2 = []
 
     return render_template(
         'members.html',
