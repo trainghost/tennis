@@ -1,255 +1,231 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원 체크 및 매칭</title>
-    <!-- Tailwind CSS CDN -->
+    <title>회원 체크</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
-            line-height: 1.6;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
         }
         .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 1.5rem;
-            background-color: #ffffff;
-            border-radius: 0.75rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         h2, h3 {
-            color: #1a202c;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 1.5rem;
+            margin-bottom: 20px;
         }
         th, td {
-            padding: 0.75rem 1rem;
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
-            border-bottom: 1px solid #e2e8f0;
         }
         th {
-            background-color: #edf2f7;
-            font-weight: 600;
-            color: #4a5568;
-            text-transform: uppercase;
-            font-size: 0.875rem;
-        }
-        tr:last-child td {
-            border-bottom: none;
+            background-color: #f2f2f2;
         }
         button {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            background-color: #4299e1;
-            color: #ffffff;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
             border: none;
-            border-radius: 0.5rem;
-            font-weight: 600;
+            border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            font-size: 16px;
         }
         button:hover {
-            background-color: #3182ce;
+            background-color: #45a049;
         }
         ul {
-            list-style: none;
-            padding: 0;
-            margin-bottom: 1.5rem;
+            list-style-type: decimal;
+            padding-left: 20px;
+            margin-bottom: 20px;
         }
-        ul li {
-            background-color: #f7fafc;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid #e2e8f0;
+        li {
+            margin-bottom: 5px;
         }
-        ul li:last-child {
-            margin-bottom: 0;
-        }
-        p strong {
-            color: #2d3748;
-        }
-        .summary-box {
-            background-color: #e0f2fe; /* Light blue background */
-            border: 1px solid #90cdf4; /* Blue border */
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-top: 0.75rem;
-            font-size: 0.95rem;
-            color: #2a4365; /* Darker blue text */
-        }
-        .summary-box strong {
-            color: #2b6cb0; /* Even darker blue for strong text */
+        p {
+            margin-top: 10px;
+            font-weight: bold;
         }
         .team-match-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 1.5rem;
-            border: 1px solid #cbd5e0;
-            border-radius: 0.5rem;
-            overflow: hidden; /* For rounded corners on table */
+            margin-top: 15px;
         }
         .team-match-table th, .team-match-table td {
-            border: 1px solid #cbd5e0;
-            padding: 0.75rem 1rem;
+            border: 1px solid #ccc;
+            padding: 10px;
             text-align: center;
         }
         .team-match-table th {
-            background-color: #e2e8f0;
-            font-weight: 700;
-            color: #2d3748;
+            background-color: #e6e6e6;
         }
-        .team-match-table td {
-            background-color: #ffffff;
-            color: #4a5568;
+        .team-match-table tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 class="text-4xl text-center mb-8">회원 체크 및 매칭 시스템</h2>
-
-        <div class="mb-8 p-6 bg-blue-50 rounded-lg shadow-inner">
-            <h3 class="text-2xl mb-4 text-blue-800">현재 회원 목록</h3>
-            <form method="post">
-                <div class="overflow-x-auto rounded-lg border border-gray-200">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이름</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">성별</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">순위</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">참가</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">일퇴</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">늦참</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            {% for member in members %}
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ member['이름'] }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ member['성별'] }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ member['순위'] }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <input type="checkbox" name="participate_{{ loop.index0 }}" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" {% if member.get('참가') %}checked{% endif %}>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <input type="checkbox" name="early_{{ loop.index0 }}" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" {% if member.get('일퇴') %}checked{% endif %}>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <input type="checkbox" name="late_{{ loop.index0 }}" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" {% if member.get('늦참') %}checked{% endif %}>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <div class="mt-6 text-center">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out">
-                        선택 저장 및 매칭 결과 보기
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
-            <div class="p-6 bg-green-50 rounded-lg shadow-lg border border-green-200">
-                <h3 class="text-2xl mb-4 text-green-800">매칭 1</h3>
-                <ul class="space-y-2">
-                    {% for member in participants_1 %}
-                        <li class="bg-green-100 text-green-800 px-4 py-2 rounded-md flex justify-between items-center">
-                            <span>{{ loop.index }}. {{ member['이름'] }}</span>
-                            <span class="text-sm text-green-600">(성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</span>
-                        </li>
-                    {% else %}
-                        <li class="text-gray-500">매칭 1 결과가 없습니다.</li>
+        <h2>회원 체크</h2>
+        <form method="post">
+            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">이름</th>
+                        <th scope="col" class="px-6 py-3">성별</th>
+                        <th scope="col" class="px-6 py-3">순위</th>
+                        <th scope="col" class="px-6 py-3">참가</th>
+                        <th scope="col" class="px-6 py-3">일퇴</th>
+                        <th scope="col" class="px-6 py-3">늦참</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ member['이름'] }}</td>
+                        <td class="px-6 py-4">{{ member['성별'] }}</td>
+                        <td class="px-6 py-4">{{ member['순위'] }}</td>
+                        <td class="px-6 py-4"><input type="checkbox" name="participate_{{ loop.index0 }}" {% if member.get('참가') %}checked{% endif %}></td>
+                        <td class="px-6 py-4"><input type="checkbox" name="early_{{ loop.index0 }}" {% if member.get('일퇴') %}checked{% endif %}></td>
+                        <td class="px-6 py-4"><input type="checkbox" name="late_{{ loop.index0 }}" {% if member.get('늦참') %}checked{% endif %}></td>
+                    </tr>
                     {% endfor %}
-                </ul>
-                <div class="summary-box">
-                    <p><strong>요약:</strong> 총 {{ summary_1.total }}명 (여자 {{ summary_1.female }}명 / 남자 {{ summary_1.male }}명)</p>
-                </div>
+                </tbody>
+            </table>
+            <button type="submit" class="mt-4 px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">선택 저장 및 매칭 결과 보기</button>
+        </form>
 
-                {# ✅ 매칭 1에 여자 5명, 총 12명일 경우에만 팀 매칭 표 표시 #}
-                {% if team_match_results %}
-                <h4 class="text-xl font-semibold mt-6 mb-4 text-green-700">팀 매칭 상세 (매칭 1)</h4>
-                <div class="overflow-x-auto">
-                    <table class="team-match-table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th colspan="2">팀 A</th>
-                                <th>vs</th>
-                                <th colspan="2">팀 B</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for match in team_match_results %}
-                            <tr>
-                                <td>{{ match.court }}</td>
-                                <td>{{ match.team_a[0]['이름'] }} ({{ match.team_a[0]['성별'] }}{{ match.team_a[0]['순위'] }}위)</td>
-                                <td>{{ match.team_a[1]['이름'] }} ({{ match.team_a[1]['성별'] }}{{ match.team_a[1]['순위'] }}위)</td>
-                                <td></td>
-                                <td>{{ match.team_b[0]['이름'] }} ({{ match.team_b[0]['성별'] }}{{ match.team_b[0]['순위'] }}위)</td>
-                                <td>{{ match.team_b[1]['이름'] }} ({{ match.team_b[1]['성별'] }}{{ match.team_b[1]['순위'] }}위)</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% endif %}
-            </div>
+        <hr class="my-8">
 
-            <div class="p-6 bg-yellow-50 rounded-lg shadow-lg border border-yellow-200">
-                <h3 class="text-2xl mb-4 text-yellow-800">매칭 2</h3>
-                <ul class="space-y-2">
-                    {% for member in participants_2 %}
-                        <li class="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-md flex justify-between items-center">
-                            <span>{{ loop.index }}. {{ member['이름'] }}</span>
-                            <span class="text-sm text-yellow-600">(성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</span>
-                        </li>
-                    {% else %}
-                        <li class="text-gray-500">매칭 2 결과가 없습니다.</li>
-                    {% endfor %}
-                </ul>
-                <div class="summary-box">
-                    <p><strong>요약:</strong> 총 {{ summary_2.total }}명 (여자 {{ summary_2.female }}명 / 남자 {{ summary_2.male }}명)</p>
-                </div>
-            </div>
+        <h3>매칭 1</h3>
+        <ul>
+            {% for member in participants_1 %}
+                <li>{{ loop.index }}. {{ member['이름'] }} (성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</li>
+            {% endfor %}
+        </ul>
+        <p><strong>요약:</strong> 총 {{ summary_1.total }}명 (여자 {{ summary_1.female }}명 / 남자 {{ summary_1.male }}명)</p>
 
-            <div class="p-6 bg-purple-50 rounded-lg shadow-lg border border-purple-200">
-                <h3 class="text-2xl mb-4 text-purple-800">매칭 3</h3>
-                <ul class="space-y-2">
-                    {% for member in participants_3 %}
-                        <li class="bg-purple-100 text-purple-800 px-4 py-2 rounded-md flex justify-between items-center">
-                            <span>{{ loop.index }}. {{ member['이름'] }}</span>
-                            <span class="text-sm text-purple-600">(성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</span>
-                        </li>
-                    {% else %}
-                        <li class="text-gray-500">매칭 3 결과가 없습니다.</li>
-                    {% endfor %}
-                </ul>
-                <div class="summary-box">
-                    <p><strong>요약:</strong> 총 {{ summary_3.total }}명 (여자 {{ summary_3.female }}명 / 남자 {{ summary_3.male }}명)</p>
-                </div>
-            </div>
-        </div>
-        <div class="mt-8 text-center">
-            <a href="/" class="inline-block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out">
-                새 파일 업로드
-            </a>
-        </div>
+        {% if team_match_results_1 %}
+        <table class="team-match-table">
+            <thead>
+                <tr>
+                    <th>코트</th>
+                    <th>팀 A</th>
+                    <th>팀 B</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in team_match_results_1 %}
+                <tr>
+                    <td>{{ match.court }}</td>
+                    <td>
+                        {% for member in match.team_a %}
+                            {{ member['이름'] }} ({{ member['성별'] }}, {{ member['순위'] }}위)<br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for member in match.team_b %}
+                            {{ member['이름'] }} ({{ member['성별'] }}, {{ member['순위'] }}위)<br>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <hr class="my-8">
+
+        <h3>매칭 2</h3>
+        <ul>
+            {% for member in participants_2 %}
+                <li>{{ loop.index }}. {{ member['이름'] }} (성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</li>
+            {% endfor %}
+        </ul>
+        <p><strong>요약:</strong> 총 {{ summary_2.total }}명 (여자 {{ summary_2.female }}명 / 남자 {{ summary_2.male }}명)</p>
+
+        {% if team_match_results_2 %} {# 매칭 2 팀 매칭 표 추가 #}
+        <table class="team-match-table">
+            <thead>
+                <tr>
+                    <th>코트</th>
+                    <th>팀 A</th>
+                    <th>팀 B</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in team_match_results_2 %}
+                <tr>
+                    <td>{{ match.court }}</td>
+                    <td>
+                        {% for member in match.team_a %}
+                            {{ member['이름'] }} ({{ member['성별'] }}, {{ member['순위'] }}위)<br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for member in match.team_b %}
+                            {{ member['이름'] }} ({{ member['성별'] }}, {{ member['순위'] }}위)<br>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <hr class="my-8">
+
+        <h3>매칭 3</h3>
+        <ul>
+            {% for member in participants_3 %}
+                <li>{{ loop.index }}. {{ member['이름'] }} (성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</li>
+            {% endfor %}
+        </ul>
+        <p><strong>요약:</strong> 총 {{ summary_3.total }}명 (여자 {{ summary_3.female }}명 / 남자 {{ summary_3.male }}명)</p>
+
+        {% if team_match_results_3 %} {# 매칭 3 팀 매칭 표 추가 #}
+        <table class="team-match-table">
+            <thead>
+                <tr>
+                    <th>코트</th>
+                    <th>팀 A</th>
+                    <th>팀 B</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in team_match_results_3 %}
+                <tr>
+                    <td>{{ match.court }}</td>
+                    <td>
+                        {% for member in match.team_a %}
+                            {{ member['이름'] }} ({{ member['성별'] }}, {{ member['순위'] }}위)<br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for member in match.team_b %}
+                            {{ member['이름'] }} ({{ member['성별'] }}, {{ member['순위'] }}위)<br>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
     </div>
 </body>
 </html>
