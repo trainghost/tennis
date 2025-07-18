@@ -130,32 +130,31 @@ def assign_courts(players, match_no):
     # -----------------
     if match_no == 1:
         if len(females) >= 5:
-            # 여자 1위는 females[0], 남자 1위는 males[0]
+            # 여자 1위 선발
             female_top = females.pop(0)
-            if males:
-                male_top = males.pop(0)
-            else:
-                male_top = None  # 남자가 없을 수도 있음
 
+            # 남자 리스트 다시 정렬 후 남자 1위 선발
+            males = sorted(males, key=lambda x: x['순위'])
+            male_top = males.pop(0) if males else None
+
+            # 5번 코트 팀 구성 (여자 1위 + 남자 1위 + 남자 2명 또는 부족 시 여자 보충)
             team5 = [female_top]
             if male_top:
                 team5.append(male_top)
 
-            # 남자 우선으로 5번 코트 4명 채우기 (여자 1명 + 남자 1명 + 남자 2명 혹은 부족시 여자 보충)
             if len(males) >= 2:
                 team5 += pick(males, 2)
             else:
-                # 남자 부족하면 남자 다 넣고 여자 보충
                 team5 += males
                 males.clear()
                 needed = 4 - len(team5)
                 if needed > 0:
                     team5 += pick(females, needed)
 
-            # 3번 코트: 여자복식 4명
+            # 3번 코트: 여자복식 4명 (남은 여자 4명 뽑기)
             c3 = pick(females, 4)
 
-            # 4번 코트: 남자복식 4명
+            # 4번 코트: 남자복식 4명 (남은 남자 4명 뽑기)
             c4 = pick(males, 4)
 
             courts[3] = make_teams(c3)
@@ -183,12 +182,11 @@ def assign_courts(players, match_no):
     # -----------------
     elif match_no == 2:
         if len(females) >= 5:
-            # 3,4번 혼복
             mixed1 = females[:2] + males[:2]
             courts[3] = make_teams(mixed1)
             mixed2 = females[2:4] + males[2:4]
             courts[4] = make_teams(mixed2)
-            # 5번: 여자 2위 + 남자 2위 + 남자 2명
+
             team5 = []
             if len(females) >= 2:
                 team5.append(females[1])
@@ -241,6 +239,7 @@ def assign_courts(players, match_no):
             courts[5] = make_teams(players[8:12])
 
     return courts
+
 
 
 
