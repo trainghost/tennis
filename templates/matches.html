@@ -1,27 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>매칭 결과</title>
+    <title>대진표</title>
 </head>
 <body>
-  <h1>대진표</h1>
-  {% for match in matches %}
-    <h2>{{ match.title }}</h2>
-    <ul>
-      {% for court, A, B in match.courts %}
-        <li>
-          {{ court }}:
-          {% if A|length == 2 and B|length == 2 %}
-            {{ A[0]["name"] }}({{ A[0]["rank"] }}), {{ A[1]["name"] }}({{ A[1]["rank"] }})
-            vs
-            {{ B[0]["name"] }}({{ B[0]["rank"] }}), {{ B[1]["name"] }}({{ B[1]["rank"] }})
-          {% else %}
-            팀을 구성할 수 없습니다.
-          {% endif %}
-        </li>
-      {% endfor %}
-    </ul>
-  {% endfor %}
+    <h2>대진표</h2>
+    {% for court, match_list in matches.items() %}
+        <h3>{{ court }}</h3>
+        <ul>
+            {% for match in match_list %}
+                <li>
+                    {{ match[0]['이름'] }}와 {{ match[1]['이름'] }} 팀
+                </li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
 </body>
 </html>
