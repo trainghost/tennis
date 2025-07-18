@@ -8,21 +8,24 @@
     <form method="post">
         <table border="1">
             <tr>
-                <th>이름</th>
-                <th>순위</th>
-                <th>참가</th>
-                <th>일퇴</th>
-                <th>늦참</th>
-            </tr>
-            {% for member in members %}
-            <tr>
-                <td>{{ member['이름'] }}</td>
-                <td>{{ member['순위'] }}</td>
-                <td><input type="checkbox" name="participate_{{ loop.index0 }}" {% if member.get('참가') %}checked{% endif %}></td>
-                <td><input type="checkbox" name="early_{{ loop.index0 }}" {% if member.get('일퇴') %}checked{% endif %}></td>
-                <td><input type="checkbox" name="late_{{ loop.index0 }}" {% if member.get('늦참') %}checked{% endif %}></td>
-            </tr>
-            {% endfor %}
+    <th>이름</th>
+    <th>성별</th>
+    <th>순위</th>
+    <th>참가</th>
+    <th>일퇴</th>
+    <th>늦참</th>
+</tr>
+{% for member in members %}
+<tr>
+    <td>{{ member['이름'] }}</td>
+    <td>{{ member['성별'] }}</td>
+    <td>{{ member['순위'] }}</td>
+    <td><input type="checkbox" name="participate_{{ loop.index0 }}" {% if member.get('참가') %}checked{% endif %}></td>
+    <td><input type="checkbox" name="early_{{ loop.index0 }}" {% if member.get('일퇴') %}checked{% endif %}></td>
+    <td><input type="checkbox" name="late_{{ loop.index0 }}" {% if member.get('늦참') %}checked{% endif %}></td>
+</tr>
+{% endfor %}
+
         </table>
         <button type="submit">저장</button>
     </form>
