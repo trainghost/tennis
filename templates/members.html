@@ -30,19 +30,19 @@
         <button type="submit">저장</button>
     </form>
 
-    <h3>매칭 1</h3>
+  <h3>매칭 1</h3>
 <ul>
 {% for member in participants_1 %}
-    <li>{{ member['이름'] }} (성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</li>
+    <li>{{ loop.index }}. {{ member['이름'] }} (성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</li>
 {% endfor %}
 </ul>
 <p><strong>요약:</strong> 총 {{ summary_1.total }}명 (여자 {{ summary_1.female }}명 / 남자 {{ summary_1.male }}명)</p>
 
 
-    <h3>매칭 2</h3>
+<h3>매칭 2</h3>
 <ul>
 {% for member in participants_2 %}
-    <li>{{ member['이름'] }} (성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</li>
+    <li>{{ loop.index }}. {{ member['이름'] }} (성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</li>
 {% endfor %}
 </ul>
 <p><strong>요약:</strong> 총 {{ summary_2.total }}명 (여자 {{ summary_2.female }}명 / 남자 {{ summary_2.male }}명)</p>
@@ -50,7 +50,7 @@
 <h3>매칭 3</h3>
 <ul>
 {% for member in participants_3 %}
-    <li>{{ member['이름'] }} (성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</li>
+    <li>{{ loop.index }}. {{ member['이름'] }} (성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</li>
 {% endfor %}
 </ul>
 <p><strong>요약:</strong> 총 {{ summary_3.total }}명 (여자 {{ summary_3.female }}명 / 남자 {{ summary_3.male }}명)</p>
