@@ -49,6 +49,7 @@ def members():
         m1_fill = [m for m in members_data if m.get('참가') and not m.get('늦참') and m not in m1_early]
         random.shuffle(m1_fill)
         participants_1 = (m1_early + m1_fill)[:12]
+        participants_1 = sorted(participants_1, key=lambda x: x['순위'])
 
         # 매칭 2
         p2_set = []
@@ -75,6 +76,7 @@ def members():
             p2_set.extend(remaining[:needed])
 
         participants_2 = p2_set[:12]
+        participants_2 = sorted(participants_2, key=lambda x: x['순위'])
 
         # 매칭 3
         match3_set = []
@@ -99,6 +101,7 @@ def members():
             match3_set.extend(remaining[:12 - len(match3_set)])
 
         participants_3 = match3_set[:12]
+        participants_3 = sorted(participants_3, key=lambda x: x['순위'])
 
         return render_template(
             'members.html',
