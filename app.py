@@ -143,63 +143,34 @@ def members():
             female_members = sorted([m for m in participants_1 if m['성별'] == '여'], key=lambda x: x['순위'])
             male_members = sorted([m for m in participants_1 if m['성별'] == '남'], key=lambda x: x['순위'])
 
-            # 팀 구성을 위한 멤버 분배 (예시)
-            # 여자 5명: 여1, 여2, 여3, 여4, 여5
-            # 남자 7명: 남1, 남2, 남3, 남4, 남5, 남6, 남7
-
-            # 팀 A (여자 2, 남자 3)
-            team_a_females = female_members[0:2] # 여1, 여2
-            team_a_males = male_members[0:3] # 남1, 남2, 남3
-
-            # 팀 B (여자 3, 남자 4)
-            team_b_females = female_members[2:5] # 여3, 여4, 여5
-            team_b_males = male_members[3:7] # 남4, 남5, 남6, 남7
-
-            # 코트별 매칭 (예시: 이미지와 유사하게 구성)
-            team_match_results = [
-                {
-                    'court': '3번코트',
-                    'team_a': [team_a_females[1], team_b_females[2]], # 여자2위, 여자5위
-                    'team_b': [team_b_females[0], team_b_females[1]] # 여자3위, 여자4위
-                },
-                {
-                    'court': '4번코트',
-                    'team_a': [team_a_females[0], team_a_males[0]], # 여자1위, 남자1위
-                    'team_b': [team_b_males[2], team_b_males[3]] # 남자6위, 남자7위
-                },
-                {
-                    'court': '5번코트',
-                    'team_a': [team_a_males[1], team_a_males[4]], # 남자2위, 남자5위 (여기서 남자5위는 male_members[4]가 됨)
-                    'team_b': [team_b_males[0], team_b_males[1]] # 남자3위, 남자4위
-                }
-            ]
-            # 위 예시 인덱스는 이미지와 정확히 일치시키기 위해 임의로 조정되었습니다.
-            # 실제 로직에서는 순위와 성별을 고려하여 유연하게 구성해야 합니다.
-            # 여기서는 이미지에 나온 순위를 기준으로 직접 매핑합니다.
-            
-            # 이미지에 나온 순위를 기준으로 매핑 (예시)
-            # 매칭 1 참여자 중 여자 1~5위, 남자 1~7위가 있다고 가정
-            female_ranks = {m['순위']: m for m in female_members}
-            male_ranks = {m['순위']: m for m in male_members}
-
-            team_match_results = [
-                {
-                    'court': '3번코트',
-                    'team_a': [female_ranks[2], female_ranks[5]], # 여자2위, 여자5위
-                    'team_b': [female_ranks[3], female_ranks[4]]  # 여자3위, 여자4위
-                },
-                {
-                    'court': '4번코트',
-                    'team_a': [female_ranks[1], male_ranks[1]], # 여자1위, 남자1위
-                    'team_b': [male_ranks[6], male_ranks[7]] # 남자6위, 남자7위
-                },
-                {
-                    'court': '5번코트',
-                    'team_a': [male_ranks[2], male_ranks[5]], # 남자2위, 남자5위
-                    'team_b': [male_ranks[3], male_ranks[4]] # 남자3위, 남자4위
-                }
-            ]
-
+            # 팀 매칭에 필요한 충분한 인원이 있는지 확인
+            if len(female_members) >= 5 and len(male_members) >= 7:
+                # 이미지에 나온 순위를 기준으로 직접 매핑 (0-기반 인덱스 사용)
+                # female_members: [여자1위, 여자2위, 여자3위, 여자4위, 여자5위]
+                # male_members: [남자1위, 남자2위, 남자3위, 남자4위, 남자5위, 남자6위, 남자7위]
+                team_match_results = [
+                    {
+                        'court': '3번코트',
+                        'team_a': [female_members[1], female_members[4]], # 여자2위, 여자5위
+                        'team_b': [female_members[2], female_members[3]]  # 여자3위, 여자4위
+                    },
+                    {
+                        'court': '4번코트',
+                        'team_a': [female_members[0], male_members[0]], # 여자1위, 남자1위
+                        'team_b': [male_members[5], male_members[6]] # 남자6위, 남자7위
+                    },
+                    {
+                        'court': '5번코트',
+                        'team_a': [male_members[1], male_members[4]], # 남자2위, 남자5위
+                        'team_b': [male_members[2], male_members[3]] # 남자3위, 남자4위
+                    }
+                ]
+            else:
+                # 조건은 맞지만, 특정 인덱스의 멤버가 부족할 경우
+                print("Warning: Not enough female/male members for specific team matching in Match 1.")
+                team_match_results = []
+        else:
+            team_match_results = [] # 조건이 맞지 않으면 팀 매칭 결과는 비워둠
 
         # ✅ 반드시 return
         return render_template(
