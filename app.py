@@ -129,57 +129,56 @@ def assign_courts(players, match_no):
 
     # -----------------
     if match_no == 1:
-    if len(females) >= 5:
-        # 여자 1위는 females[0], 남자 1위는 males[0]
-        female_top = females.pop(0)
-        if males:
-            male_top = males.pop(0)
+        if len(females) >= 5:
+            # 여자 1위는 females[0], 남자 1위는 males[0]
+            female_top = females.pop(0)
+            if males:
+                male_top = males.pop(0)
+            else:
+                male_top = None  # 남자가 없을 수도 있음
+
+            team5 = [female_top]
+            if male_top:
+                team5.append(male_top)
+
+            # 남자 우선으로 5번 코트 4명 채우기 (여자 1명 + 남자 1명 + 남자 2명 혹은 부족시 여자 보충)
+            if len(males) >= 2:
+                team5 += pick(males, 2)
+            else:
+                # 남자 부족하면 남자 다 넣고 여자 보충
+                team5 += males
+                males.clear()
+                needed = 4 - len(team5)
+                if needed > 0:
+                    team5 += pick(females, needed)
+
+            # 3번 코트: 여자복식 4명
+            c3 = pick(females, 4)
+
+            # 4번 코트: 남자복식 4명
+            c4 = pick(males, 4)
+
+            courts[3] = make_teams(c3)
+            courts[4] = make_teams(c4)
+            courts[5] = make_teams(team5)
+
+        elif len(females) == 4:
+            courts[3] = make_teams(pick(females, 4))  # 여복
+            courts[4] = make_teams(pick(males, 4))    # 남복
+            courts[5] = make_teams(pick(males, 4))    # 남복
+
+        elif len(females) in [2, 3]:
+            mixed = females[:2] + males[:2]
+            courts[3] = make_teams(mixed)
+            males = males[2:]
+            courts[4] = make_teams(pick(males, 4))
+            remaining = players[8:12]
+            courts[5] = make_teams(remaining)
+
         else:
-            male_top = None  # 남자가 없을 수도 있음
-        
-        team5 = [female_top]
-        if male_top:
-            team5.append(male_top)
-        
-        # 남자 우선으로 5번 코트 4명 채우기 (여자 1명 + 남자 1명 + 남자 2명 혹은 부족시 여자 보충)
-        if len(males) >= 2:
-            team5 += pick(males, 2)
-        else:
-            # 남자 부족하면 남자 다 넣고 여자 보충
-            team5 += males
-            males.clear()
-            needed = 4 - len(team5)
-            if needed > 0:
-                team5 += pick(females, needed)
-        
-        # 3번 코트: 여자복식 4명
-        c3 = pick(females, 4)
-        
-        # 4번 코트: 남자복식 4명
-        c4 = pick(males, 4)
-        
-        courts[3] = make_teams(c3)
-        courts[4] = make_teams(c4)
-        courts[5] = make_teams(team5)
-
-    elif len(females) == 4:
-        courts[3] = make_teams(pick(females, 4))  # 여복
-        courts[4] = make_teams(pick(males, 4))    # 남복
-        courts[5] = make_teams(pick(males, 4))    # 남복
-
-    elif len(females) in [2, 3]:
-        mixed = females[:2] + males[:2]
-        courts[3] = make_teams(mixed)
-        males = males[2:]
-        courts[4] = make_teams(pick(males, 4))
-        remaining = players[8:12]
-        courts[5] = make_teams(remaining)
-
-    else:
-        courts[3] = make_teams(players[:4])
-        courts[4] = make_teams(players[4:8])
-        courts[5] = make_teams(players[8:12])
-
+            courts[3] = make_teams(players[:4])
+            courts[4] = make_teams(players[4:8])
+            courts[5] = make_teams(players[8:12])
 
     # -----------------
     elif match_no == 2:
@@ -242,6 +241,7 @@ def assign_courts(players, match_no):
             courts[5] = make_teams(players[8:12])
 
     return courts
+
 
 
 
