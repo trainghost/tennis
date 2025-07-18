@@ -126,13 +126,28 @@ def members():
             participants_3=participants_3
         )
 
+def count_gender(participants):
+    total = len(participants)
+    male = sum(1 for p in participants if p.get('성별') == '남')
+    female = sum(1 for p in participants if p.get('성별') == '여')
+    return {'total': total, 'male': male, 'female': female}
+
+    summary_1 = count_gender(participants_1)
+    summary_2 = count_gender(participants_2)
+    summary_3 = count_gender(participants_3)
+
+    
     return render_template(
-        'members.html',
-        members=members_data,
-        participants_1=[],
-        participants_2=[],
-        participants_3=[]
-    )
+    'members.html',
+    members=members_data,
+    participants_1=participants_1,
+    participants_2=participants_2,
+    participants_3=participants_3,
+    summary_1=summary_1,
+    summary_2=summary_2,
+    summary_3=summary_3
+)
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
