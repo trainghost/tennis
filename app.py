@@ -113,7 +113,7 @@ def members():
     )
 
 # ✅ 코트 배정 로직
-def assign_courts(players, match_no):
+def assign_courts(players, match_no): 
     courts = {3: [], 4: [], 5: []}
     females = sorted([p for p in players if p['성별'] == '여'], key=lambda x: x['순위'])
     males = sorted([p for p in players if p['성별'] == '남'], key=lambda x: x['순위'])
@@ -127,136 +127,85 @@ def assign_courts(players, match_no):
         sorted_players = sorted(four, key=lambda x: x['순위'])
         return [[sorted_players[0], sorted_players[3]], [sorted_players[1], sorted_players[2]]]
 
-    # 매칭 1 예시
+    # 매칭 1 처리
     if match_no == 1:
-        if len(females) >= 5:
-            # 5번 코트 팀 먼저 선정
-            female_top = females.pop(0)
-            male_top = males.pop(0) if males else None
+        selected_females = females[:min(5, len(females))]
+        selected_males = males[:min(7, len(males))]
+        
+        selected_players = selected_females + selected_males  # 매칭 1에 선발된 12명
 
-            team5 = [female_top]
-            if male_top:
-                team5.append(male_top)
+        if len(selected_females) == 5:  # 조건 5: 여자 5명일 경우
+            # 3번 코트: 선발된 12명 중 순위 제일 높은 남자와 순위 제일 높은 여자가 팀 vs 순위 제일 낮은 남자 2명
+            team_3_1 = [selected_females[0], selected_males[0]]  # 순위 제일 높은 여자와 남자
+            team_3_2 = [selected_males[-2], selected_males[-1]]  # 순위 제일 낮은 남자 2명
+            courts[3] = [team_3_1, team_3_2]
 
-            # 남자 우선으로 5번 코트 보충
-            if len(males) >= 2:
-                team5 += pick(males, 2)
-            else:
-                team5 += males
-                males.clear()
-                needed = 4 - len(team5)
-                if needed > 0:
-                    team5 += pick(females, needed)
+            # 4번 코트: 선발된 12명 중 순위 두번째 높은 여자와 순위 제일 낮은 여자가 팀 vs 순위 세번째로 높은 여자와 순위 네번째로 높은 여자가 팀
+            team_4_1 = [selected_females[1], selected_females[-1]]  # 두 번째로 높은 여자와 제일 낮은 여자
+            team_4_2 = [selected_females[2], selected_females[3]]  # 세 번째로 높은 여자와 네 번째로 높은 여자
+            courts[4] = [team_4_1, team_4_2]
 
-            # 5번 팀원 id 저장
-            team5_ids = set(id(p) for p in team5)
+            # 5번 코트: 남자 복식 (순위 제일 높은 남자와 제일 낮은 남자)
+            team_5 = [selected_males[1], selected_males[-3]]  # 남자 4명 중 순위 제일 높은 남자와 제일 낮은 남자
+            courts[5] = make_teams(team_5)
 
-            # 3번, 4번 코트 후보에서 5번 팀원 제외
-            f_for_34 = [p for p in females if id(p) not in team5_ids]
-            m_for_34 = [p for p in males if id(p) not in team5_ids]
+        elif len(selected_females) == 4:  # 조건 4: 여자 4명일 경우
+            # 3번 코트: 선발된 12명 중 순위 제일 높은 여자와 순위 제일 낮은 여자가 팀 vs 순위 두번째로 높은 여자와 순위 세번째로 높은 여자가 팀
+            team_3_1 = [selected_females[0], selected_females[-1]]  # 순위 제일 높은 여자와 제일 낮은 여자
+            team_3_2 = [selected_females[1], selected_females[2]]  # 두 번째로 높은 여자와 세 번째로 높은 여자
+            courts[3] = [team_3_1, team_3_2]
 
-            c3 = pick(f_for_34, 4)
-            c4 = pick(m_for_34, 4)
+            # 4번 코트: 남자 복식 (코트에 배정된 4명 중 순위 제일 높은 사람과 제일 낮은 사람이 팀)
+            team_4 = pick(selected_males, 4)
+            courts[4] = make_teams(team_4)
 
-            courts[3] = make_teams(c3)
-            courts[4] = make_teams(c4)
-            courts[5] = make_teams(team5)
+            # 5번 코트: 남자 복식 (코트에 배정된 4명 중 순위 제일 높은 사람과 제일 낮은 사람이 팀)
+            team_5 = pick(selected_males, 4)
+            courts[5] = make_teams(team_5)
 
-        else:
-            # 기존 로직 처리
-            pass
+        elif len(selected_females) == 3:  # 조건 3: 여자 3명일 경우
+            # 3번 코트: 선발된 12명 중 순위 제일 높은 남자와 선발된 12명 중 순위 제일 높은 여자가 팀 vs 순위 두 번째로 높은 남자와 선발된 12명 중 순위 두 번째로 높은 여자가 팀
+            team_3_1 = [selected_females[0], selected_males[0]]  # 순위 제일 높은 여자와 남자
+            team_3_2 = [selected_males[1], selected_females[1]]  # 두 번째로 높은 남자와 여자
+            courts[3] = [team_3_1, team_3_2]
 
-    # 매칭 2 예시
-    elif match_no == 2:
-        if len(females) >= 5:
-            # 5번 코트 먼저 선정: 여자 2위, 남자 2위 + 보충
-            female_2nd = females[1]
-            male_2nd = males[1] if len(males) > 1 else None
+            # 4번 코트: 남자 복식 (코트에 배정된 4명 중 순위 제일 높은 사람과 제일 낮은 사람이 팀)
+            team_4 = pick(selected_males, 4)
+            courts[4] = make_teams(team_4)
 
-            team5 = [female_2nd]
-            if male_2nd:
-                team5.append(male_2nd)
+            # 5번 코트: 남자 복식 (코트에 배정된 4명 중 순위 제일 높은 사람과 제일 낮은 사람이 팀)
+            team_5 = pick(selected_males, 4)
+            courts[5] = make_teams(team_5)
 
-            # 후보군 보충 (남자 우선)
-            f_candidates = females.copy()
-            m_candidates = males.copy()
+        elif len(selected_females) == 2:  # 조건 2: 여자 2명일 경우
+            # 3번 코트: 선발된 12명 중 순위 제일 높은 남자와 여자가 팀 vs 선발된 12명 중 제일 순위 낮은 남자 2명
+            team_3_1 = [selected_females[0], selected_males[0]]  # 순위 제일 높은 여자와 남자
+            team_3_2 = [selected_males[-2], selected_males[-1]]  # 순위 제일 낮은 남자 2명
+            courts[3] = [team_3_1, team_3_2]
 
-            # 5번 팀원 id 저장
-            team5_ids = set(id(p) for p in team5)
+            # 4번 코트: 남자 복식 (코트에 배정된 4명 중 순위 제일 높은 사람과 제일 낮은 사람이 팀)
+            team_4 = pick(selected_males, 4)
+            courts[4] = make_teams(team_4)
 
-            # 보충할 후보군에서 5번 팀원 제외
-            f_candidates = [p for p in f_candidates if id(p) not in team5_ids]
-            m_candidates = [p for p in m_candidates if id(p) not in team5_ids]
+            # 5번 코트: 남자 복식 (코트에 배정된 4명 중 순위 제일 높은 사람과 제일 낮은 사람이 팀)
+            team_5 = pick(selected_males, 4)
+            courts[5] = make_teams(team_5)
 
-            if len(m_candidates) >= 2:
-                team5 += pick(m_candidates, 2)
-            else:
-                team5 += m_candidates
-                needed = 4 - len(team5)
-                if needed > 0:
-                    team5 += pick(f_candidates, needed)
+        elif len(selected_females) == 1:  # 조건 1: 여자 1명일 경우
+            # 3번 코트: 남자복식 (순위가 제일 높은 사람과 제일 낮은 사람이 팀)
+            team_3 = pick(selected_males, 4)
+            courts[3] = make_teams(team_3)
 
-            # 5번 팀원 id 저장 (보충 후)
-            team5_ids = set(id(p) for p in team5)
+            # 4번 코트: 남자복식 (순위가 제일 높은 사람과 제일 낮은 사람이 팀)
+            team_4 = pick(selected_males, 4)
+            courts[4] = make_teams(team_4)
 
-            # 3,4번 후보군에서 5번 팀원 제외
-            f_for_34 = [p for p in females if id(p) not in team5_ids]
-            m_for_34 = [p for p in males if id(p) not in team5_ids]
-
-            c3 = f_for_34[:2] + m_for_34[:2]
-            c4 = f_for_34[2:4] + m_for_34[2:4]
-
-            courts[3] = make_teams(c3)
-            courts[4] = make_teams(c4)
-            courts[5] = make_teams(team5)
-
-        else:
-            # 기존 처리
-            pass
-
-    # 매칭 3 예시 (매칭 2와 비슷)
-    else:
-        if len(females) >= 5:
-            female_3rd = females[2]
-            male_3rd = males[2] if len(males) > 2 else None
-
-            team5 = [female_3rd]
-            if male_3rd:
-                team5.append(male_3rd)
-
-            f_candidates = females.copy()
-            m_candidates = males.copy()
-
-            team5_ids = set(id(p) for p in team5)
-
-            f_candidates = [p for p in f_candidates if id(p) not in team5_ids]
-            m_candidates = [p for p in m_candidates if id(p) not in team5_ids]
-
-            if len(m_candidates) >= 2:
-                team5 += pick(m_candidates, 2)
-            else:
-                team5 += m_candidates
-                needed = 4 - len(team5)
-                if needed > 0:
-                    team5 += pick(f_candidates, needed)
-
-            team5_ids = set(id(p) for p in team5)
-
-            f_for_34 = [p for p in females if id(p) not in team5_ids]
-            m_for_34 = [p for p in males if id(p) not in team5_ids]
-
-            c3 = f_for_34[:2] + m_for_34[:2]
-            c4 = f_for_34[2:4] + m_for_34[2:4]
-
-            courts[3] = make_teams(c3)
-            courts[4] = make_teams(c4)
-            courts[5] = make_teams(team5)
-
-        else:
-            # 기존 처리
-            pass
+            # 5번 코트: 남자복식 (순위가 제일 높은 사람과 제일 낮은 사람이 팀)
+            team_5 = pick(selected_males, 4)
+            courts[5] = make_teams(team_5)
 
     return courts
+
 
 
 
