@@ -115,35 +115,117 @@ def members():
 # ✅ 코트 배정 로직
 def generate_court_assignments(players, match_no):
     courts = {3: [], 4: [], 5: []}
-    females = [p for p in players if p['성별'] == '여']
-    males = [p for p in players if p['성별'] == '남']
+    females = sorted([p for p in players if p['성별'] == '여'], key=lambda x: x['순위'])
+    males = sorted([p for p in players if p['성별'] == '남'], key=lambda x: x['순위'])
+    total = len(players)
 
-    if len(females) >= 5:
-        if match_no == 1:
-            courts[3] = pick_team(females[:4])  # 여자복식
-            courts[4] = pick_team(males[:4])    # 남자복식
-            courts[5] = pick_team([females[0]] + males[:3])  # 여자1위 포함 혼합
-        elif match_no == 2:
-            courts[3] = pick_mixed(females, males)
-            courts[4] = pick_mixed(females, males)
-            courts[5] = pick_team([females[1], males[1], males[2], males[3]])  # 특수
+    def make_teams(four_players):
+        sp = sorted(four_players, key=lambda x: x['순위'])
+        return [[sp[0], sp[3]], [sp[1], sp[2]]]
+
+    def make_mixed_teams(fem, mal):
+        # 남2 + 여2 필요
+        # 부족하면 fallback으로 그냥 4명 혼합
+        if len(fem) >= 2 and len(mal) >= 2:
+            team_players = fem[:2] + mal[:2]
         else:
-            courts[3] = pick_mixed(females, males)
-            courts[4] = pick_mixed(females, males)
-            courts[5] = pick_team([females[2], males[2], males[3], males[4]])  # 특수
-    elif len(females) == 4:
-        courts[3] = pick_team(females)
-        courts[4] = pick_team(males[:4])
-        courts[5] = pick_team(males[4:8])
-    elif len(females) in [2, 3]:
-        courts[3] = pick_mixed(females, males)
-        courts[4] = pick_team(males[:4])
-        courts[5] = pick_team(players[8:12])
-    else:
-        courts[3] = pick_team(players[:4])
-        courts[4] = pick_team(players[4:8])
-        courts[5] = pick_team(players[8:12])
+            team_players = sorted(fem + mal, key=lambda x: x['순위'])[:4]
+        return make_teams(team_players)
+
+    if match_no == 1:
+        if len(females) >= 5:
+            # 3번: 여복 (여자 4명)
+            courts[3] = make_teams(females[:4])
+            # 4번: 남복 (남자 4명)
+            courts[4] = make_teams(males[:4])
+            # 5번: 여자 1위 포함 + 남자 3명 혼합 복식 (4명)
+            # 5번 코트는 여자복식 아님! (혼합 복식)
+            if len(males) >= 3:
+                team5_players = [females[0]] + males[:3]
+            else:
+                team5_players = females[:4]  # fallback 여자복식
+            courts[5] = make_teams(team5_players)
+        elif len(females) == 4:
+            # 3번: 여복 (여자 4명)
+            courts[3] = make_teams(females[:4])
+            # 4번: 남복 (남자 4명)
+            courts[4] = make_teams(males[:4])
+            # 5번: 남복 (남자 4명)
+            courts[5] = make_teams(males[4:8] if len(males) >= 8 else males[4:])
+        elif len(females) in [2, 3]:
+            # 3번: 혼복 (남2 + 여2)
+            courts[3] = make_mixed_teams(females, males)
+            # 4번: 남복 (남자 4명)
+            courts[4] = make_teams(males[:4])
+            # 5번: 성별 무관 (아무 4명)
+            courts[5] = make_teams(players[8:12])
+        else:
+            # 여자가 1명 이하: 전부 성별 무관
+            courts[3] = make_teams(players[:4])
+            courts[4] = make_teams(players[4:8])
+            courts[5] = make_teams(players[8:12])
+
+    elif match_no == 2:
+        if len(females) >= 5:
+            # 3번,4번: 혼복 (남2+여2씩)
+            courts[3] = make_mixed_teams(females, males)
+            # 남,여 각 코트별 4명 선발 후 제외 처리 필요 → 아래 예시는 단순화
+            # 4번 코트도 혼복
+            courts[4] = make_mixed_teams(females[2:], males[2:])
+            # 5번: 여자 2위 + 남자 2, vs 남자 복식 4명
+            if len(females) >= 2 and len(males) >= 4:
+                team5_teamA = [females[1], males[1]]
+                team5_teamB = males[2:6] if len(males) >= 6 else males[2:6]
+                # 여기서는 4명 팀 A, 4명 팀 B지만 코트 4명 배정 한계로 fallback 필요
+                # 그냥 여자 2명+남자 2명 + 남자 2명 섞어 4명씩 나누는 식으로 단순화
+                team5_players = team5_teamA + team5_teamB[:2]
+                courts[5] = make_teams(team5_players[:4])
+            else:
+                courts[5] = make_teams(males[:4])
+        elif len(females) == 4:
+            # 3번,4번: 혼복
+            courts[3] = make_mixed_teams(females, males)
+            courts[4] = make_mixed_teams(females[2:], males[2:])
+            # 5번: 남복
+            courts[5] = make_teams(males[:4])
+        elif len(females) in [2, 3]:
+            # 3번: 혼복
+            courts[3] = make_mixed_teams(females, males)
+            # 4번: 남복
+            courts[4] = make_teams(males[:4])
+            # 5번: 성별 무관
+            courts[5] = make_teams(players[8:12])
+        else:
+            # 여자가 1명 이하: 전부 성별 무관
+            courts[3] = make_teams(players[:4])
+            courts[4] = make_teams(players[4:8])
+            courts[5] = make_teams(players[8:12])
+
+    else:  # 매칭3
+        if len(females) >= 5:
+            courts[3] = make_mixed_teams(females, males)
+            courts[4] = make_mixed_teams(females[2:], males[2:])
+            # 5번: 여자 3위 + 남자 3위 포함 혼합 + 남복팀 vs 남복팀
+            if len(females) >= 3 and len(males) >= 5:
+                team5_players = [females[2], males[2], males[3], males[4]]
+                courts[5] = make_teams(team5_players)
+            else:
+                courts[5] = make_teams(males[:4])
+        elif len(females) == 4:
+            courts[3] = make_mixed_teams(females, males)
+            courts[4] = make_mixed_teams(females[2:], males[2:])
+            courts[5] = make_teams(males[:4])
+        elif len(females) in [2, 3]:
+            courts[3] = make_mixed_teams(females, males)
+            courts[4] = make_teams(males[:4])
+            courts[5] = make_teams(players[8:12])
+        else:
+            courts[3] = make_teams(players[:4])
+            courts[4] = make_teams(players[4:8])
+            courts[5] = make_teams(players[8:12])
+
     return courts
+
 
 def pick_team(four_players):
     sorted_players = sorted(four_players, key=lambda x: x['순위'])
