@@ -62,24 +62,24 @@ def generate_teams_for_group(participants_list):
 
     team_match_results = []
 
-    # 여성 5명 (남성 7명) - 첫 번째 이미지 기반
+    # ✅ 여성 5명 (남성 7명) - 새로 제공해주신 이미지 기반으로 업데이트
     if female_count == 5 and male_count == 7:
         if len(female_members) >= 5 and len(male_members) >= 7:
             team_match_results = [
                 {
                     'court': '3번 코트',
-                    'team_a': [female_members[0], male_members[0]], # 여자1위, 남자1위
-                    'team_b': [female_members[1], male_members[1]]  # 여자2위, 남자2위
+                    'team_a': [female_members[1], female_members[4]], # 여자2위, 여자5위
+                    'team_b': [female_members[2], female_members[3]]  # 여자3위, 여자4위
                 },
                 {
                     'court': '4번 코트',
-                    'team_a': [female_members[2], male_members[2]], # 여자3위, 남자3위
-                    'team_b': [female_members[3], male_members[3]]  # 여자4위, 남자4위
+                    'team_a': [female_members[0], male_members[0]], # 여자1위, 남자1위
+                    'team_b': [male_members[5], male_members[6]]    # 남자6위, 남자7위
                 },
                 {
                     'court': '5번 코트',
-                    'team_a': [female_members[4], male_members[4]], # 여자5위, 남자5위
-                    'team_b': [male_members[5], male_members[6]]    # 남자6위, 남자7위
+                    'team_a': [male_members[1], male_members[4]], # 남자2위, 남자5위
+                    'team_b': [male_members[2], male_members[3]]  # 남자3위, 남자4위
                 }
             ]
     # 여성 4명 (남성 8명) - 두 번째 이미지 기반
@@ -122,7 +122,7 @@ def generate_teams_for_group(participants_list):
                     'team_b': [male_members[4], male_members[5]]  # 남자5위, 남자6위
                 }
             ]
-    # ✅ 여성 2명 (남성 10명) - 새로운 이미지 기반으로 업데이트
+    # 여성 2명 (남성 10명) - 가장 최근에 제공해주신 이미지 기반
     elif female_count == 2 and male_count == 10:
         if len(female_members) >= 2 and len(male_members) >= 10:
             team_match_results = [
