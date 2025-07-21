@@ -43,14 +43,11 @@ def upload():
                 rank = int(match.group(1))
                 name = match.group(2).strip()
                 gender = gender_map.get(name, '미정')
-                # 초기 로드 시 참여 상태를 False로 설정
                 extracted_data.append({
-                    '순위': rank, 
-                    '이름': name, 
-                    '성별': gender, 
-                    '매칭1_참여': False, 
-                    '매칭2_참여': False, 
-                    '매칭3_참여': False,
+                    '순위': rank,
+                    '이름': name,
+                    '성별': gender,
+                    '참여': False, # 단일 '참여' 체크박스
                     '일퇴': False,
                     '늦참': False
                 })
@@ -62,20 +59,11 @@ def upload():
     return "파일 업로드 실패!"
 
 
-# 이 함수는 직접 호출되지 않으므로 비워둡니다.
-def generate_teams_for_group(participants_list):
-    """
-    12명의 참여자 리스트와 여성 인원 수에 따라 특정 팀 구성을 반환합니다.
-    (이 함수는 메인 로직에서 오버라이드되지 않는 경우에만 사용됩니다.)
-    """
-    return []
-
-
 @app.route('/members', methods=['GET', 'POST'])
 def members():
     global members_data
 
-    # 매칭 결과 변수들을 초기화 (POST에서 업데이트되거나, GET에서 기본값으로 사용)
+    # 매칭 결과 변수들을 초기화
     participants_1 = []
     participants_2 = []
     participants_3 = []
@@ -89,19 +77,15 @@ def members():
 
     if request.method == 'POST':
         print("--- POST 요청 수신됨 ---")
-        print(f"request.form 데이터: {request.form}") # 전송된 폼 데이터 전체 출력
+        print(f"request.form 데이터: {request.form}")
 
         for idx, member in enumerate(members_data):
-            match1_key = f'match1_{member["이름"]}'
-            match2_key = f'match2_{member["이름"]}'
-            match3_key = f'match3_{member["이름"]}'
+            participate_key = f'participate_{member["이름"]}' # 단일 참여 체크박스
             rank_key = f'rank_{member["이름"]}'
             early_key = f'early_{idx}'
             late_key = f'late_{idx}'
 
-            member['매칭1_참여'] = match1_key in request.form
-            member['매칭2_참여'] = match2_key in request.form
-            member['매칭3_참여'] = match3_key in request.form
+            member['참여'] = participate_key in request.form
             
             # 순위 업데이트
             received_rank = request.form.get(rank_key)
@@ -111,75 +95,91 @@ def members():
             member['일퇴'] = early_key in request.form
             member['늦참'] = late_key in request.form
 
-            print(f"업데이트된 멤버: {member['이름']}, 매칭1: {member['매칭1_참여']}, 순위: {member['순위']}, 일퇴: {member['일퇴']}, 늦참: {member['늦참']}")
+            # print(f"업데이트된 멤버: {member['이름']}, 참여: {member['참여']}, 순위: {member['순위']}, 일퇴: {member['일퇴']}, 늦참: {member['늦참']}")
 
         print("--- members_data 업데이트 완료 ---")
-        for i, member in enumerate(members_data[:5]): # 첫 5개만 출력하여 확인
-            print(f"members_data[{i}]: {member}")
 
-    # POST 요청이 처리되었든, GET 요청으로 페이지가 로드되었든
-    # 항상 현재 members_data를 기반으로 참여자 및 대진표를 다시 계산합니다.
-    # 이 로직은 if request.method == 'POST': 블록 바깥에 있어야 합니다!
+    # 모든 매칭 참여자 풀은 '참여' 체크박스에 체크된 인원들
+    all_selected_participants = [p for p in members_data if p.get('참여')]
+    
+    # 순위에 따라 정렬하여 매칭 선발에 사용 (필요 시)
+    all_selected_participants_sorted = sorted(all_selected_participants, key=lambda x: x['순위'])
+    # 랜덤 선택을 위해 복사본을 만들어 섞음
+    random_candidates = list(all_selected_participants) # 원본 members_data의 참조를 유지해야 하므로, deepcopy 대신 shallow copy 후 인스턴스 ID로 비교
+    random.shuffle(random_candidates)
+
 
     # --- 매칭 1 참여자 선정 로직 ---
-    participants_1_all = [p for p in members_data if p.get('매칭1_참여')]
-    m1_early = [m for m in participants_1_all if m.get('일퇴')]
-    m1_fill = [m for m in participants_1_all if not m.get('늦참') and m not in m1_early]
-    random.shuffle(m1_fill)
-    participants_1 = (m1_early + m1_fill)[:12]
-    participants_1 = sorted(participants_1, key=lambda x: x['순위'])
+    # 1. 일퇴에 체크한 사람 포함 (늦참이 아닌 사람들 중에서)
+    m1_priority_list = [p for p in all_selected_participants if p.get('일퇴') and not p.get('늦참')]
+    participants_1.extend(m1_priority_list)
+    
+    # 2. 12명이 안되면 참여 체크한 사람 중에 랜덤으로 추가 (늦참 체크한 사람은 제외)
+    m1_fill_candidates = [p for p in random_candidates if not p.get('늦참') and p not in participants_1]
+    
+    if len(participants_1) < 12:
+        needed = 12 - len(participants_1)
+        # 이미 추가된 인원 제외 후, 남아있는 후보들에서 랜덤으로 추가
+        eligible_for_random = [p for p in m1_fill_candidates if p not in participants_1]
+        participants_1.extend(eligible_for_random[:needed]) # 무작위로 섞였으니 앞에서부터 필요한 만큼 추가
+
+    participants_1 = participants_1[:12] # 최종적으로 12명만 유지
+    participants_1 = sorted(participants_1, key=lambda x: x['순위']) # 최종적으로 순위 순으로 정렬
+
 
     # --- 매칭 2 참여자 선정 로직 ---
-    p2_set = []
-    part_late = [m for m in members_data if m.get('매칭2_참여') and m.get('늦참')]
-    p2_set.extend(part_late)
+    # 1. 일퇴에 체크한 사람 포함
+    m2_early = [p for p in all_selected_participants if p.get('일퇴')]
+    participants_2.extend(m2_early)
 
-    part_all_m2 = [m for m in members_data if m.get('매칭2_참여')]
-    m1_set = set(id(m) for m in participants_1)
-    missing_in_m1 = [m for m in part_all_m2 if id(m) not in m1_set]
-    for m in missing_in_m1:
-        if m not in p2_set:
-            p2_set.append(m)
+    # 2. 늦참에 체크한 사람 포함
+    m2_late = [p for p in all_selected_participants if p.get('늦참') and p not in participants_2]
+    participants_2.extend(m2_late)
 
-    part_early_m2 = [m for m in members_data if m.get('매칭2_참여') and m.get('일퇴')]
-    for m in part_early_m2:
-        if m not in p2_set:
-            p2_set.append(m)
+    # 3. 참여 체크한 사람 중 매칭 1에 포함되지 않은 사람 포함
+    m1_ids = {id(p) for p in participants_1} # 매칭 1 참여자의 고유 ID 집합
+    m2_not_in_m1 = [p for p in all_selected_participants if id(p) not in m1_ids and p not in participants_2]
+    if len(participants_2) < 12:
+        needed = 12 - len(participants_2)
+        participants_2.extend(sorted(m2_not_in_m1, key=lambda x: x['순위'])[:needed]) # 순위순으로 채움 (랜덤 대신)
 
-    needed = 12 - len(p2_set)
-    if needed > 0:
-        remaining = [m for m in part_all_m2 if m not in p2_set]
-        random.shuffle(remaining)
-        p2_set.extend(remaining[:needed])
+    # 4. 12명이 안되면 참여 체크한 사람 중에 랜덤으로 추가
+    if len(participants_2) < 12:
+        needed = 12 - len(participants_2)
+        eligible_for_random = [p for p in random_candidates if p not in participants_2]
+        participants_2.extend(eligible_for_random[:needed])
+    
+    participants_2 = participants_2[:12] # 최종적으로 12명만 유지
+    participants_2 = sorted(participants_2, key=lambda x: x['순위']) # 최종적으로 순위 순으로 정렬
 
-    participants_2 = p2_set[:12]
-    participants_2 = sorted(participants_2, key=lambda x: x['순위'])
 
     # --- 매칭 3 참여자 선정 로직 ---
-    match3_set = []
-    part_all_m3 = [m for m in members_data if m.get('매칭3_참여')]
-    
-    early_leave_participants_3 = [m for m in part_all_m3 if m.get('일퇴')]
-    match3_set.extend(early_leave_participants_3)
+    # 1. 일퇴에 체크한 사람 포함
+    m3_early = [p for p in all_selected_participants if p.get('일퇴')]
+    participants_3.extend(m3_early)
 
-    late_participants_3 = [m for m in part_all_m3 if m.get('늦참') and m not in match3_set]
-    match3_set.extend(late_participants_3)
+    # 2. 늦참에 체크한 사람 포함
+    m3_late = [p for p in all_selected_participants if p.get('늦참') and p not in participants_3]
+    participants_3.extend(m3_late)
 
-    match1_ids = {id(p) for p in participants_1}
-    match2_ids = {id(p) for p in participants_2}
-    not_in_m1_m2 = [p for p in part_all_m3 if id(p) not in match1_ids and id(p) not in match2_ids and p not in match3_set]
-    match3_set.extend(not_in_m1_m2)
+    # 3. 참여 체크한 사람 중 매칭 2에 포함되지 않은 사람 포함
+    m2_ids = {id(p) for p in participants_2} # 매칭 2 참여자의 고유 ID 집합
+    m3_not_in_m2 = [p for p in all_selected_participants if id(p) not in m2_ids and p not in participants_3]
+    if len(participants_3) < 12:
+        needed = 12 - len(participants_3)
+        participants_3.extend(sorted(m3_not_in_m2, key=lambda x: x['순위'])[:needed]) # 순위순으로 채움 (랜덤 대신)
 
-    if len(match3_set) < 12:
-        remaining = [m for m in part_all_m3 if m not in match3_set]
-        random.shuffle(remaining)
-        match3_set.extend(remaining[:12 - len(match3_set)])
-        
-    participants_3 = match3_set[:12]
-    participants_3 = sorted(participants_3, key=lambda x: x['순위'])
+    # 4. 12명이 안되면 참여 체크한 사람 중에 랜덤으로 추가
+    if len(participants_3) < 12:
+        needed = 12 - len(participants_3)
+        eligible_for_random = [p for p in random_candidates if p not in participants_3]
+        participants_3.extend(eligible_for_random[:needed])
+
+    participants_3 = participants_3[:12] # 최종적으로 12명만 유지
+    participants_3 = sorted(participants_3, key=lambda x: x['순위']) # 최종적으로 순위 순으로 정렬
 
 
-    # ✅ 성별 요약 계산
+    # 성별 요약 계산
     def count_gender(participants):
         total = len(participants)
         male = sum(1 for p in participants if p.get('성별') == '남')
@@ -190,7 +190,8 @@ def members():
     summary_2 = count_gender(participants_2)
     summary_3 = count_gender(participants_3)
 
-    # --- 각 매칭에 대한 팀 생성 함수 호출 (기본 로직) ---
+    # --- 각 매칭에 대한 팀 생성 함수 호출 (기존 대진표 이미지 기반 로직) ---
+
     # 매칭 1 대진표 (오버라이드 로직 포함)
     if summary_1['total'] == 12:
         female_members_1 = sorted([p for p in participants_1 if p['성별'] == '여'], key=lambda x: x['순위'])
@@ -317,11 +318,12 @@ def members():
                 {'court': '5번 코트', 'team_a': [male_members_3[4], male_members_3[11]], 'team_b': [male_members_3[5], male_members_3[10]]}  # 남자5위, 남자12위 vs 남자6위, 남자11위
             ]
 
+
     print(f"최종 participants_1 길이: {len(participants_1)}")
     print(f"최종 participants_2 길이: {len(participants_2)}")
     print(f"최종 participants_3 길이: {len(participants_3)}")
-    print(f"최종 summary_1: {summary_1}")
-    print(f"최종 team_match_results_1: {team_match_results_1}")
+    # print(f"최종 summary_1: {summary_1}")
+    # print(f"최종 team_match_results_1: {team_match_results_1}")
 
 
     return render_template(
