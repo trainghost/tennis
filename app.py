@@ -100,8 +100,6 @@ def members():
             member['일퇴'] = early_key in request.form
             member['늦참'] = late_key in request.form
 
-            # print(f"업데이트된 멤버: {member['이름']}, 참여: {member['참여']}, 순위: {member['순위']}, 일퇴: {member['일퇴']}, 늦참: {member['늦참']}")
-
         print("--- members_data 업데이트 완료 ---")
 
     # 모든 매칭 참여자 풀은 '참여' 체크박스에 체크된 인원들
@@ -115,30 +113,49 @@ def members():
     random.shuffle(random_candidates)
 
     # 여성 참여자들을 순위순으로 정렬 (일퇴 우선 선발 후 부족 시 랜덤 채우기 위함)
-    female_participants_sorted = sorted([p for p in all_selected_participants if p['성별'] == '여'], key=lambda x: x['순위'])
+    female_participants = [p for p in all_selected_participants if p['성별'] == '여']
+    
+    # 각 매칭별 여성 4명 선발 로직을 함수로 분리 (재사용성을 위해)
+    def select_four_females(available_females):
+        selected_females = []
+        
+        # 1. 일퇴에 체크한 여성 우선 선발
+        early_females = [p for p in available_females if p.get('일퇴')]
+        random.shuffle(early_females) # 일퇴 여성 내에서도 랜덤
+
+        for f in early_females:
+            if len(selected_females) < 4:
+                selected_females.append(f)
+            else:
+                break
+        
+        # 2. 4명이 안되면 나머지 여성 중에서 랜덤으로 채움
+        if len(selected_females) < 4:
+            needed = 4 - len(selected_females)
+            # 아직 선택되지 않은 여성들 중에서 랜덤으로 선택
+            remaining_females = [p for p in available_females if p not in selected_females]
+            random.shuffle(remaining_females)
+            selected_females.extend(remaining_females[:needed])
+            
+        return selected_females
 
     # --- 매칭 1 참여자 선정 로직 ---
     participants_1 = []
-    # 1. 일퇴에 체크한 여성 우선 선발 (순위 무관)
-    m1_early_females = [p for p in female_participants_sorted if p.get('일퇴')]
-    random.shuffle(m1_early_females) # 일퇴 여성 내에서도 랜덤
-    participants_1.extend(m1_early_females)
-
-    # 2. 4명이 안되면 나머지 여성 중에서 랜덤으로 채움
-    if len(participants_1) < 4:
-        needed_females = 4 - len(participants_1)
-        remaining_females = [p for p in female_participants_sorted if p not in participants_1]
-        random.shuffle(remaining_females) # 나머지 여성도 랜덤
-        participants_1.extend(remaining_females[:needed_females])
+    # 1. 여성 4명 선발
+    selected_females_1 = select_four_females(female_participants)
+    participants_1.extend(selected_females_1)
     
-    # 3. 일퇴에 체크한 남성 우선 선발 (늦참이 아닌 사람들 중에서, 순위 무관)
-    m1_early_males = [p for p in all_selected_participants if p.get('성별') == '남' and p.get('일퇴') and not p.get('늦참')]
+    # 2. 일퇴에 체크한 남성 우선 선발 (늦참이 아닌 사람들 중에서, 순위 무관)
+    # 이미 선택된 여성들을 제외한 전체 참여자 중에서 남성을 필터링
+    remaining_candidates_after_females_1 = [p for p in all_selected_participants if p not in participants_1]
+    
+    m1_early_males = [p for p in remaining_candidates_after_females_1 if p.get('성별') == '남' and p.get('일퇴') and not p.get('늦참')]
     random.shuffle(m1_early_males) # 일퇴 남성도 랜덤
     for male in m1_early_males:
-        if male not in participants_1 and len(participants_1) < 12: # 매칭 인원 제한 체크
+        if len(participants_1) < 12: # 매칭 인원 제한 체크
             participants_1.append(male)
 
-    # 4. 12명이 안되면 참여 체크한 사람 중에 랜덤으로 추가 (늦참 체크한 사람은 제외)
+    # 3. 12명이 안되면 참여 체크한 사람 중에 랜덤으로 추가 (늦참 체크한 사람은 제외)
     # 이미 포함된 인원 제외
     current_p1_ids = {id(p) for p in participants_1}
     m1_fill_candidates = [p for p in random_candidates if not p.get('늦참') and id(p) not in current_p1_ids]
@@ -154,33 +171,26 @@ def members():
 
     # --- 매칭 2 참여자 선정 로직 ---
     participants_2 = []
-    # 1. 일퇴에 체크한 여성 우선 선발 (순위 무관)
-    m2_early_females = [p for p in female_participants_sorted if p.get('일퇴')]
-    random.shuffle(m2_early_females)
-    participants_2.extend(m2_early_females)
+    # 1. 여성 4명 선발
+    selected_females_2 = select_four_females(female_participants)
+    participants_2.extend(selected_females_2)
 
-    # 2. 4명이 안되면 나머지 여성 중에서 랜덤으로 채움
-    if len(participants_2) < 4:
-        needed_females = 4 - len(participants_2)
-        remaining_females = [p for p in female_participants_sorted if p not in participants_2]
-        random.shuffle(remaining_females)
-        participants_2.extend(remaining_females[:needed_females])
-
-    # 3. 일퇴에 체크한 남성 우선 선발 (순위 무관)
-    m2_early_males = [p for p in all_selected_participants if p.get('성별') == '남' and p.get('일퇴')]
+    # 2. 일퇴에 체크한 남성 우선 선발
+    remaining_candidates_after_females_2 = [p for p in all_selected_participants if p not in participants_2]
+    m2_early_males = [p for p in remaining_candidates_after_females_2 if p.get('성별') == '남' and p.get('일퇴')]
     random.shuffle(m2_early_males)
     for male in m2_early_males:
-        if male not in participants_2 and len(participants_2) < 12:
+        if len(participants_2) < 12:
             participants_2.append(male)
 
-    # 4. 늦참에 체크한 사람 중 아직 포함되지 않은 사람 포함 (순위 무관)
-    m2_late = [p for p in all_selected_participants if p.get('늦참') and p not in participants_2]
+    # 3. 늦참에 체크한 사람 중 아직 포함되지 않은 사람 포함
+    m2_late = [p for p in remaining_candidates_after_females_2 if p.get('늦참') and p not in participants_2]
     random.shuffle(m2_late)
     for late_p in m2_late:
-        if late_p not in participants_2 and len(participants_2) < 12:
+        if len(participants_2) < 12:
             participants_2.append(late_p)
 
-    # 5. 참여 체크한 사람 중 매칭 1에 포함되지 않은 사람 포함 (랜덤)
+    # 4. 참여 체크한 사람 중 매칭 1에 포함되지 않은 사람 포함 (랜덤)
     current_p2_ids = {id(p) for p in participants_2}
     m1_ids_for_m2_check = {id(p) for p in participants_1}
     m2_not_in_m1 = [p for p in random_candidates if id(p) not in m1_ids_for_m2_check and id(p) not in current_p2_ids]
@@ -190,7 +200,7 @@ def members():
         needed = 12 - len(participants_2)
         participants_2.extend(m2_not_in_m1[:needed])
 
-    # 6. 12명이 안되면 나머지 참여자 중 랜덤으로 추가
+    # 5. 12명이 안되면 나머지 참여자 중 랜덤으로 추가
     if len(participants_2) < 12:
         needed = 12 - len(participants_2)
         eligible_for_random = [p for p in random_candidates if p not in participants_2]
@@ -203,33 +213,26 @@ def members():
 
     # --- 매칭 3 참여자 선정 로직 ---
     participants_3 = []
-    # 1. 일퇴에 체크한 여성 우선 선발 (순위 무관)
-    m3_early_females = [p for p in female_participants_sorted if p.get('일퇴')]
-    random.shuffle(m3_early_females)
-    participants_3.extend(m3_early_females)
+    # 1. 여성 4명 선발
+    selected_females_3 = select_four_females(female_participants)
+    participants_3.extend(selected_females_3)
 
-    # 2. 4명이 안되면 나머지 여성 중에서 랜덤으로 채움
-    if len(participants_3) < 4:
-        needed_females = 4 - len(participants_3)
-        remaining_females = [p for p in female_participants_sorted if p not in participants_3]
-        random.shuffle(remaining_females)
-        participants_3.extend(remaining_females[:needed_females])
-
-    # 3. 일퇴에 체크한 남성 우선 선발 (순위 무관)
-    m3_early_males = [p for p in all_selected_participants if p.get('성별') == '남' and p.get('일퇴')]
+    # 2. 일퇴에 체크한 남성 우선 선발
+    remaining_candidates_after_females_3 = [p for p in all_selected_participants if p not in participants_3]
+    m3_early_males = [p for p in remaining_candidates_after_females_3 if p.get('성별') == '남' and p.get('일퇴')]
     random.shuffle(m3_early_males)
     for male in m3_early_males:
-        if male not in participants_3 and len(participants_3) < 12:
+        if len(participants_3) < 12:
             participants_3.append(male)
 
-    # 4. 늦참에 체크한 사람 중 아직 포함되지 않은 사람 포함 (순위 무관)
-    m3_late = [p for p in all_selected_participants if p.get('늦참') and p not in participants_3]
+    # 3. 늦참에 체크한 사람 중 아직 포함되지 않은 사람 포함
+    m3_late = [p for p in remaining_candidates_after_females_3 if p.get('늦참') and p not in participants_3]
     random.shuffle(m3_late)
     for late_p in m3_late:
-        if late_p not in participants_3 and len(participants_3) < 12:
+        if len(participants_3) < 12:
             participants_3.append(late_p)
 
-    # 5. 참여 체크한 사람 중 매칭 1 또는 매칭 2에 포함되지 않은 사람 포함 (랜덤)
+    # 4. 참여 체크한 사람 중 매칭 1 또는 매칭 2에 포함되지 않은 사람 포함 (랜덤)
     current_p3_ids = {id(p) for p in participants_3}
     p1_ids_set = {id(p) for p in participants_1}
     p2_ids_set = {id(p) for p in participants_2}
@@ -245,7 +248,7 @@ def members():
         needed = 12 - len(participants_3)
         participants_3.extend(m3_not_in_m1_or_m2[:needed])
 
-    # 6. 12명이 안되면 나머지 참여자 중 랜덤으로 추가
+    # 5. 12명이 안되면 나머지 참여자 중 랜덤으로 추가
     if len(participants_3) < 12:
         needed = 12 - len(participants_3)
         eligible_for_random = [p for p in random_candidates if p not in participants_3]
@@ -292,13 +295,13 @@ def members():
         female_members_1 = sorted([p for p in participants_1 if p['성별'] == '여'], key=lambda x: x['순위'])
         male_members_1 = sorted([p       for p in participants_1 if p['성별'] == '남'], key=lambda x: x['순위'])
 
-        if summary_1['female'] == 5 and summary_1['male'] == 7:
+        if summary_1['female'] == 5 and summary_1['male'] == 7: # 이 조건에 걸리면 그대로 5명으로 대진표를 만듦
             team_match_results_1 = [
                 {'court': '3번 코트', 'team_a': [female_members_1[1], female_members_1[4]], 'team_b': [female_members_1[2], female_members_1[3]]}, # 여자2위, 여자5위 vs 여자3위, 여자4위
                 {'court': '4번 코트', 'team_a': [female_members_1[0], male_members_1[0]], 'team_b': [male_members_1[5], male_members_1[6]]}, # 여자1위, 남자1위 vs 남자6위, 남자7위
                 {'court': '5번 코트', 'team_a': [male_members_1[1], male_members_1[4]], 'team_b': [male_members_1[2], male_members_1[3]]}  # 남자2위, 남자5위 vs 남자3위, 남자4위
             ]
-        elif summary_1['female'] == 4 and summary_1['male'] == 8:
+        elif summary_1['female'] == 4 and summary_1['male'] == 8: # 이 조건에 걸리도록 수정된 로직이 목표
             team_match_results_1 = [
                 {'court': '3번 코트', 'team_a': [female_members_1[0], female_members_1[3]], 'team_b': [female_members_1[1], female_members_1[2]]}, # 여자1위, 여자4위 vs 여자2위, 여자3위
                 {'court': '4번 코트', 'team_a': [male_members_1[0], male_members_1[7]], 'team_b': [male_members_1[1], male_members_1[6]]}, # 남자1위, 남자8위 vs 남자2위, 남자7위
@@ -328,6 +331,8 @@ def members():
                 {'court': '4번 코트', 'team_a': [male_members_1[2], male_members_1[9]], 'team_b': [male_members_1[3], male_members_1[8]]}, # 남자3위, 남자10위 vs 남자4위, 남자9위
                 {'court': '5번 코트', 'team_a': [male_members_1[4], male_members_1[7]], 'team_b': [male_members_1[5], male_members_1[6]]}  # 남자5위, 남자8위 vs 남자6위, 남자7위
             ]
+        else: # 예상치 못한 성별 구성일 경우
+            team_match_results_1 = []
 
     # 매칭 2 대진표 (오버라이드 로직 포함)
     if summary_2['total'] == 12:
@@ -370,6 +375,8 @@ def members():
                 {'court': '4번 코트', 'team_a': [male_members_2[2], male_members_2[8]], 'team_b': [male_members_2[3], male_members_2[7]]}, # 남자3위, 남자9위 vs 남자4위, 남자8위
                 {'court': '5번 코트', 'team_a': [male_members_2[4], male_members_2[11]], 'team_b': [male_members_2[5], male_members_2[6]]}  # 남자5위, 남자12위 vs 남자6위, 남자7위
             ]
+        else:
+            team_match_results_2 = []
 
     # 매칭 3 대진표 (오버라이드 로직 포함)
     if summary_3['total'] == 12:
@@ -412,14 +419,13 @@ def members():
                 {'court': '4번 코트', 'team_a': [male_members_3[2], male_members_3[7]], 'team_b': [male_members_3[3], male_members_3[6]]}, # 남자3위, 남자8위 vs 남자4위, 남자7위
                 {'court': '5번 코트', 'team_a': [male_members_3[4], male_members_3[11]], 'team_b': [male_members_3[5], male_members_3[10]]}  # 남자5위, 남자12위 vs 남자6위, 남자11위
             ]
+        else:
+            team_match_results_3 = []
 
 
     print(f"최종 participants_1 길이: {len(participants_1)}")
     print(f"최종 participants_2 길이: {len(participants_2)}")
     print(f"최종 participants_3 길이: {len(participants_3)}")
-    # print(f"최종 summary_1: {summary_1}")
-    # print(f"최종 team_match_results_1: {team_match_results_1}")
-
 
     return render_template(
         'members.html',
