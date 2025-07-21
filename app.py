@@ -1,3 +1,14 @@
+네, "매칭 1 혹은 매칭 2에 불참한 사람"으로 매칭 3의 선발 로직을 변경하겠습니다. 즉, 매칭 3의 3단계 우선순위에서 **매칭 1에 선발되지 않았거나 (OR) 매칭 2에 선발되지 않은 사람**들을 고려하도록 수정합니다.
+
+이전에는 `id(p) not in p1_ids_set and id(p) not in p2_ids_set` (AND 조건)이었으나, 이를 `id(p) not in p1_ids_set or id(p) not in p2_ids_set` (OR 조건)으로 변경하여 더 많은 인원이 이 우선순위에 포함될 수 있도록 합니다.
+
+-----
+
+## `app.py` (수정된 버전)
+
+매칭 3 선발 로직의 3단계 필터링 조건을 `or`로 변경했습니다.
+
+```python
 from flask import Flask, render_template, request, redirect, url_for
 import pandas as pd
 import os
@@ -176,18 +187,13 @@ def members():
     participants_3.extend(m3_late)
 
     # 3. 참여 체크한 사람 중 매칭 1 또는 매칭 2에 포함되지 않은 사람 포함 (순위순)
-    # 매칭 1 또는 매칭 2에 참여한 사람들의 ID 집합
-    # 즉, 이 집합에 포함되지 않은 사람이 '매칭 1 또는 매칭 2에 불참한 사람'
     p1_ids_set = {id(p) for p in participants_1}
     p2_ids_set = {id(p) for p in participants_2}
     
-    # 매칭 1에도 없고 AND 매칭 2에도 없는 사람
-    # (id(p) not in p1_ids_set) AND (id(p) not in p2_ids_set)
-    # 이는 (id(p) not in (p1_ids_set.union(p2_ids_set))) 와 동일
-    
+    # '매칭 1에 포함되지 않았거나 OR 매칭 2에 포함되지 않은 사람'
     m3_not_in_m1_or_m2 = [
         p for p in all_selected_participants_sorted
-        if id(p) not in p1_ids_set and id(p) not in p2_ids_set # 매칭 1에도 없고 AND 매칭 2에도 없는 사람
+        if (id(p) not in p1_ids_set or id(p) not in p2_ids_set) # 매칭 1에 없거나 OR 매칭 2에 없는 사람
         and p not in participants_3 # 이미 매칭 3에 선발되지 않은 사람
     ]
 
@@ -333,7 +339,7 @@ def members():
             team_match_results_3 = [
                 {'court': '3번 코트', 'team_a': [male_members_3[0], female_members_3[0]], 'team_b': [male_members_3[1], female_members_3[1]]}, # 남자1위, 여자1위 vs 남자2위, 여자2위
                 {'court': '4번 코트', 'team_a': [male_members_3[2], male_members_3[8]], 'team_b': [male_members_3[3], male_members_3[7]]}, # 남자3위, 남자9위 vs 남자4위, 남자8위
-                {'court': '5번 코트', 'team_a': [male_members_3[4], male_members_3[9]], 'team_b': [male_members_3[5], male_members_3[6]]}  # 남자5위, 남자10위 vs 남자6위, 남자7위
+                {'court': '5번 코트', 'team_a': [male_members_3[4], male_members_3[9]], 'team_b': [male_members_3[5], male_members_3[6]]}  # 남자5위, 남자10위 vs 남자6위, 남자9위
             ]
         elif summary_3['female'] == 1 and summary_3['male'] == 11:
             team_match_results_3 = [
@@ -377,3 +383,5 @@ def members():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+
+```
