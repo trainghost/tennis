@@ -1,12 +1,3 @@
-The error `SyntaxError: invalid syntax` means that there's a problem with how the Python code is written, making it unreadable by the Python interpreter. The logs show that the error is happening on `line 1` of `app.py`, which is currently a comment or descriptive text from our previous conversation, not a Python code line.
-
-This indicates that the **entire previous response, including the explanatory text, was incorrectly pasted into the `app.py` file**, overwriting the actual Python code.
-
-To fix this, **you need to replace the entire content of your `app.py` file with only the valid Python code** provided in my last response. **Do not include any of the conversational or explanatory text** (like "네, '매칭 1 혹은 매칭 2에 불참한 사람'으로 매칭 3의 선발 로직을 변경하겠습니다. ...").
-
-**Here is the complete and corrected `app.py` code again. Please ensure you copy ONLY this code into your `app.py` file:**
-
-```python
 from flask import Flask, render_template, request, redirect, url_for
 import pandas as pd
 import os
@@ -381,5 +372,3 @@ def members():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
-
-```
