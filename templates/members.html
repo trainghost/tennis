@@ -19,6 +19,7 @@
         .team-table th { background-color: #e9e9e9; }
         .btn-submit { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
         .btn-submit:hover { background-color: #45a049; }
+        .non-selected { margin-top: 15px; font-size: 0.9em; color: #666; }
     </style>
 </head>
 <body>
@@ -102,21 +103,32 @@
                             <td>{{ match.court }}</td>
                             <td>
                                 {% for player in match.team_a %}
-                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %} {# 이름(순위)으로 표시 #}
+                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %}
                                 {% endfor %}
                             </td>
                             <td>vs</td>
                             <td>
                                 {% for player in match.team_b %}
-                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %} {# 이름(순위)으로 표시 #}
+                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %}
                                 {% endfor %}
                             </td>
+                            
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             {% else %}
                 <p>매칭 1 대진표를 생성할 수 없습니다. 참여자 수가 12명이 아니거나, 성별 구성에 해당하는 대진표 규칙이 없습니다.</p>
+            {% endif %}
+            {% if non_selected_participants_1 %}
+                <div class="non-selected">
+                    <h4>매칭 1에 선발되지 않은 참여자 (총 {{ non_selected_participants_1|length }}명):</h4>
+                    <p>
+                        {% for p in non_selected_participants_1 %}
+                            {{ p.이름 }}({{ p.순위 }}위){% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                </div>
             {% endif %}
         {% else %}
             <p>매칭 1에 선택된 참여자가 없습니다.</p>
@@ -154,13 +166,13 @@
                             <td>{{ match.court }}</td>
                             <td>
                                 {% for player in match.team_a %}
-                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %} {# 이름(순위)으로 표시 #}
+                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %}
                                 {% endfor %}
                             </td>
                             <td>vs</td>
                             <td>
                                 {% for player in match.team_b %}
-                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %} {# 이름(순위)으로 표시 #}
+                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %}
                                 {% endfor %}
                             </td>
                         </tr>
@@ -169,6 +181,16 @@
                 </table>
             {% else %}
                 <p>매칭 2 대진표를 생성할 수 없습니다. 참여자 수가 12명이 아니거나, 성별 구성에 해당하는 대진표 규칙이 없습니다.</p>
+            {% endif %}
+            {% if non_selected_participants_2 %}
+                <div class="non-selected">
+                    <h4>매칭 2에 선발되지 않은 참여자 (총 {{ non_selected_participants_2|length }}명):</h4>
+                    <p>
+                        {% for p in non_selected_participants_2 %}
+                            {{ p.이름 }}({{ p.순위 }}위){% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                </div>
             {% endif %}
         {% else %}
             <p>매칭 2에 선택된 참여자가 없습니다.</p>
@@ -206,13 +228,13 @@
                             <td>{{ match.court }}</td>
                             <td>
                                 {% for player in match.team_a %}
-                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %} {# 이름(순위)으로 표시 #}
+                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %}
                                 {% endfor %}
                             </td>
                             <td>vs</td>
                             <td>
                                 {% for player in match.team_b %}
-                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %} {# 이름(순위)으로 표시 #}
+                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %}
                                 {% endfor %}
                             </td>
                         </tr>
@@ -221,6 +243,16 @@
                 </table>
             {% else %}
                 <p>매칭 3 대진표를 생성할 수 없습니다. 참여자 수가 12명이 아니거나, 성별 구성에 해당하는 대진표 규칙이 없습니다.</p>
+            {% endif %}
+            {% if non_selected_participants_3 %}
+                <div class="non-selected">
+                    <h4>매칭 3에 선발되지 않은 참여자 (총 {{ non_selected_participants_3|length }}명):</h4>
+                    <p>
+                        {% for p in non_selected_participants_3 %}
+                            {{ p.이름 }}({{ p.순위 }}위){% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                </div>
             {% endif %}
         {% else %}
             <p>매칭 3에 선택된 참여자가 없습니다.</p>
