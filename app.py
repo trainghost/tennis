@@ -175,14 +175,25 @@ def members():
     m3_late = [p for p in all_selected_participants if p.get('늦참') and p not in participants_3]
     participants_3.extend(m3_late)
 
-    # 3. 참여 체크한 사람 중 매칭 1과 매칭 2에 모두 포함되지 않은 사람 포함 (순위순)
-    # 매칭 1과 매칭 2의 참여자 ID 집합
-    all_prev_matching_ids = {id(p) for p in participants_1}.union({id(p) for p in participants_2})
+    # 3. 참여 체크한 사람 중 매칭 1 또는 매칭 2에 포함되지 않은 사람 포함 (순위순)
+    # 매칭 1 또는 매칭 2에 참여한 사람들의 ID 집합
+    # 즉, 이 집합에 포함되지 않은 사람이 '매칭 1 또는 매칭 2에 불참한 사람'
+    p1_ids_set = {id(p) for p in participants_1}
+    p2_ids_set = {id(p) for p in participants_2}
     
-    m3_not_in_m1_m2 = [p for p in all_selected_participants_sorted if id(p) not in all_prev_matching_ids and p not in participants_3]
+    # 매칭 1에도 없고 AND 매칭 2에도 없는 사람
+    # (id(p) not in p1_ids_set) AND (id(p) not in p2_ids_set)
+    # 이는 (id(p) not in (p1_ids_set.union(p2_ids_set))) 와 동일
+    
+    m3_not_in_m1_or_m2 = [
+        p for p in all_selected_participants_sorted
+        if id(p) not in p1_ids_set and id(p) not in p2_ids_set # 매칭 1에도 없고 AND 매칭 2에도 없는 사람
+        and p not in participants_3 # 이미 매칭 3에 선발되지 않은 사람
+    ]
+
     if len(participants_3) < 12:
         needed = 12 - len(participants_3)
-        participants_3.extend(m3_not_in_m1_m2[:needed]) # 순위순으로 채움
+        participants_3.extend(m3_not_in_m1_or_m2[:needed]) # 순위순으로 채움
 
     # 4. 12명이 안되면 참여 체크한 사람 중에 랜덤으로 추가
     if len(participants_3) < 12:
@@ -214,7 +225,7 @@ def members():
     # 매칭 1 대진표 (오버라이드 로직 포함)
     if summary_1['total'] == 12:
         female_members_1 = sorted([p for p in participants_1 if p['성별'] == '여'], key=lambda x: x['순위'])
-        male_members_1 = sorted([p for p in participants_1 if p['성별'] == '남'], key=lambda x: x['순위'])
+        male_members_1 = sorted([p       for p in participants_1 if p['성별'] == '남'], key=lambda x: x['순위'])
 
         if summary_1['female'] == 5 and summary_1['male'] == 7:
             team_match_results_1 = [
