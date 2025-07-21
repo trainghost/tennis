@@ -84,7 +84,7 @@ def members():
             member['매칭3_참여'] = f'match3_{member["이름"]}' in request.form
             
             # Update rank from dropdown
-            member['순위'] = int(request.form.get(f'rank_{member["이름"]}'))
+           member['순위'] = int(request.form.get(f'rank_{member["이름"]}', member['순위']))
 
             # 일퇴/늦참도 POST 요청 시에만 업데이트되므로 여기서 처리
             # 이전에 사용된 'participate', 'early', 'late' 대신
