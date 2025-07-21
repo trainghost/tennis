@@ -267,7 +267,7 @@ def members():
     # 매칭되지 않은 참여자 명단 업데이트
     # 모든 매칭에 선발되지 않은 전체 참여자 목록을 생성
     all_participants_ids = {id(p) for p in all_selected_participants}
-    matched_in_any_game_ids = set(p1_ids) | set(p2_ids) | set(p3_ids) # 이건 이미 위에 all_matched_ids로 대체됨
+    # matched_in_any_game_ids = set(p1_ids) | set(p2_ids) | set(p3_ids) # 이건 이미 위에 all_matched_ids로 대체됨
     non_selected_final = sorted([p for p in all_selected_participants if id(p) not in all_matched_ids], key=lambda x: x['순위'])
 
     # 기존의 매칭별 non_selected_participants는 이제 모든 매칭에서 남은 사람 목록을 사용
