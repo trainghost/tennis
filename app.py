@@ -65,6 +65,7 @@ def members():
     global members_data
 
     # 매칭 결과 변수들을 초기화 - GET 요청 시에도 반드시 초기화되어야 합니다.
+    # 초기화는 항상 이루어져야 합니다.
     participants_1 = []
     participants_2 = []
     participants_3 = []
@@ -78,21 +79,16 @@ def members():
 
     if request.method == 'POST':
         for idx, member in enumerate(members_data):
-            # Checkboxes are sent as 'on' if checked, otherwise they are not in request.form
+            # Checkboxes는 선택되면 'on'으로 전송되고, 그렇지 않으면 request.form에 없습니다.
             member['매칭1_참여'] = f'match1_{member["이름"]}' in request.form
             member['매칭2_참여'] = f'match2_{member["이름"]}' in request.form
             member['매칭3_참여'] = f'match3_{member["이름"]}' in request.form
             
-            # Update rank from dropdown
-           member['순위'] = int(request.form.get(f'rank_{member["이름"]}', member['순위']))
+            # 드롭다운에서 순위 업데이트 (NoneType 오류 수정)
+            # request.form.get()이 None을 반환할 경우, member['순위']의 기존 값을 기본값으로 사용
+            member['순위'] = int(request.form.get(f'rank_{member["이름"]}', member['순위']))
 
             # 일퇴/늦참도 POST 요청 시에만 업데이트되므로 여기서 처리
-            # 이전에 사용된 'participate', 'early', 'late' 대신
-            # 매칭별 참여 여부와 일퇴/늦참은 별도의 체크박스로 처리되어야 함.
-            # 예를 들어, 각 멤버의 '일퇴'와 '늦참'은 명시적인 폼 필드를 통해 받아야 함.
-            # 현재 코드에는 일퇴/늦참을 받는 폼 필드가 명시적으로 없으므로,
-            # members_data에 일퇴/늦참 정보가 없다면 아래 로직이 제대로 작동하지 않습니다.
-            # 이전 코드에서 f'early_{idx}' in request.form 등으로 받았던 부분을 복원해야 합니다.
             member['일퇴'] = f'early_{idx}' in request.form if request.form.get(f'early_{idx}') else False
             member['늦참'] = f'late_{idx}' in request.form if request.form.get(f'late_{idx}') else False
 
@@ -136,7 +132,7 @@ def members():
 
         # --- 매칭 3 참여자 선정 로직 ---
         match3_set = []
-        part_all_m3 = [m for m in members_data if m.get('매칭3_참여')] # Only consider those marked for Match 3
+        part_all_m3 = [m for m in members_data if m.get('매칭3_참여')] # 매칭3에 표시된 사람만 고려
         
         # 일퇴자 먼저
         early_leave_participants_3 = [m for m in part_all_m3 if m.get('일퇴')]
@@ -147,7 +143,7 @@ def members():
         match3_set.extend(late_participants_3)
 
         # 매칭1, 매칭2에 참여하지 않은 사람들을 우선 포함
-        match1_ids = {id(p) for p in participants_1} # Use id for proper object comparison
+        match1_ids = {id(p) for p in participants_1} # 올바른 객체 비교를 위해 id 사용
         match2_ids = {id(p) for p in participants_2}
         not_in_m1_m2 = [p for p in part_all_m3 if id(p) not in match1_ids and id(p) not in match2_ids and p not in match3_set]
         match3_set.extend(not_in_m1_m2)
@@ -300,7 +296,7 @@ def members():
                     {'court': '5번 코트', 'team_a': [male_members_3[4], male_members_3[11]], 'team_b': [male_members_3[5], male_members_3[10]]}  # 남자5위, 남자12위 vs 남자6위, 남자11위
                 ]
 
-    # Ensure all variables are passed to the template in both GET and POST
+    # GET 및 POST 요청 모두에서 모든 변수를 템플릿에 전달합니다.
     return render_template(
         'members.html',
         members=members_data,
