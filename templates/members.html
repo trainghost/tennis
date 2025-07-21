@@ -1,231 +1,239 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-    <title>회원 체크</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>매칭 관리</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 900px;
-            margin: auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h2, h3 {
-            color: #333;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        ul {
-            list-style-type: decimal;
-            padding-left: 20px;
-            margin-bottom: 20px;
-        }
-        li {
-            margin-bottom: 5px;
-        }
-        p {
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        .team-match-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        .team-match-table th, .team-match-table td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: center;
-        }
-        .team-match-table th {
-            background-color: #e6e6e6;
-        }
-        .team-match-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .form-section { margin-bottom: 40px; }
+        .match-section { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
+        .match-section h3 { margin-top: 0; color: #555; }
+        .match-summary { margin-bottom: 15px; font-weight: bold; }
+        .team-table { width: 80%; margin: 10px auto; border-collapse: collapse; }
+        .team-table th, .team-table td { border: 1px solid #eee; padding: 6px; text-align: center; }
+        .team-table th { background-color: #e9e9e9; }
+        .btn-submit { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        .btn-submit:hover { background-color: #45a049; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>회원 체크</h2>
-        <form method="post">
-            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+    <h1>회원 목록 및 매칭 설정</h1>
+
+    <div class="form-section">
+        <form action="{{ url_for('members') }}" method="POST">
+            <table>
+                <thead>
                     <tr>
-                        <th scope="col" class="px-6 py-3">이름</th>
-                        <th scope="col" class="px-6 py-3">성별</th>
-                        <th scope="col" class="px-6 py-3">순위</th>
-                        <th scope="col" class="px-6 py-3">참가</th>
-                        <th scope="col" class="px-6 py-3">일퇴</th>
-                        <th scope="col" class="px-6 py-3">늦참</th>
+                        <th>순위</th>
+                        <th>이름</th>
+                        <th>성별</th>
+                        <th>매칭 1 참여</th>
+                        <th>매칭 2 참여</th>
+                        <th>매칭 3 참여</th>
+                        <th>일퇴 (매칭1)</th>
+                        <th>늦참 (매칭1)</th>
+                        <th>순위 수정</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for member in members %}
-                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ member['이름'] }}</td>
-                        <td class="px-6 py-4">{{ member['성별'] }}</td>
-                        <td class="px-6 py-4">{{ member['순위'] }}</td>
-                        <td class="px-6 py-4"><input type="checkbox" name="participate_{{ loop.index0 }}" {% if member.get('참가') %}checked{% endif %}></td>
-                        <td class="px-6 py-4"><input type="checkbox" name="early_{{ loop.index0 }}" {% if member.get('일퇴') %}checked{% endif %}></td>
-                        <td class="px-6 py-4"><input type="checkbox" name="late_{{ loop.index0 }}" {% if member.get('늦참') %}checked{% endif %}></td>
+                    <tr>
+                        <td>{{ member.순위 }}</td>
+                        <td>{{ member.이름 }}</td>
+                        <td>{{ member.성별 }}</td>
+                        <td>
+                            <input type="checkbox" name="match1_{{ member.이름 }}" {% if member.매칭1_참여 %}checked{% endif %}>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="match2_{{ member.이름 }}" {% if member.매칭2_참여 %}checked{% endif %}>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="match3_{{ member.이름 }}" {% if member.매칭3_참여 %}checked{% endif %}>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="early_{{ loop.index0 }}" {% if member.일퇴 %}checked{% endif %}>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="late_{{ loop.index0 }}" {% if member.늦참 %}checked{% endif %}>
+                        </td>
+                        <td>
+                            <select name="rank_{{ member.이름 }}">
+                                {% for i in range(1, (members|length) + 1) %} {# 전체 멤버 수에 맞춰 순위 범위 설정 #}
+                                    <option value="{{ i }}" {% if member.순위 == i %}selected{% endif %}>{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            <button type="submit" class="mt-4 px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">선택 저장 및 매칭 결과 보기</button>
+            <br>
+            <button type="submit" class="btn-submit">선택 저장 및 매칭 결과 보기</button>
         </form>
-
-        <hr class="my-8">
-
-        <h3>매칭 1</h3>
-        <ul>
-            {% for member in participants_1 %}
-                <li>{{ loop.index }}. {{ member['이름'] }} (성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</li>
-            {% endfor %}
-        </ul>
-        <p><strong>요약:</strong> 총 {{ summary_1.total }}명 (여자 {{ summary_1.female }}명 / 남자 {{ summary_1.male }}명)</p>
-
-        {% if team_match_results_1 %}
-        <table class="team-match-table">
-            <thead>
-                <tr>
-                    <th>코트</th>
-                    <th>팀 A</th>
-                    <th>팀 B</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for match in team_match_results_1 %}
-                <tr>
-                    <td>{{ match.court }}</td>
-                    <td>
-                        {% for member in match.team_a %}
-                            {{ member['이름'] }} ({{ member['성별'] }}, {{ member['순위'] }}위)<br>
-                        {% endfor %}
-                    </td>
-                    <td>
-                        {% for member in match.team_b %}
-                            {{ member['이름'] }} ({{ member['성별'] }}, {{ member['순위'] }}위)<br>
-                        {% endfor %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% endif %}
-
-        <hr class="my-8">
-
-        <h3>매칭 2</h3>
-        <ul>
-            {% for member in participants_2 %}
-                <li>{{ loop.index }}. {{ member['이름'] }} (성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</li>
-            {% endfor %}
-        </ul>
-        <p><strong>요약:</strong> 총 {{ summary_2.total }}명 (여자 {{ summary_2.female }}명 / 남자 {{ summary_2.male }}명)</p>
-
-        {% if team_match_results_2 %} {# 매칭 2 팀 매칭 표 추가 #}
-        <table class="team-match-table">
-            <thead>
-                <tr>
-                    <th>코트</th>
-                    <th>팀 A</th>
-                    <th>팀 B</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for match in team_match_results_2 %}
-                <tr>
-                    <td>{{ match.court }}</td>
-                    <td>
-                        {% for member in match.team_a %}
-                            {{ member['이름'] }} ({{ member['성별'] }}, {{ member['순위'] }}위)<br>
-                        {% endfor %}
-                    </td>
-                    <td>
-                        {% for member in match.team_b %}
-                            {{ member['이름'] }} ({{ member['성별'] }}, {{ member['순위'] }}위)<br>
-                        {% endfor %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% endif %}
-
-        <hr class="my-8">
-
-        <h3>매칭 3</h3>
-        <ul>
-            {% for member in participants_3 %}
-                <li>{{ loop.index }}. {{ member['이름'] }} (성별: {{ member['성별'] }}, 순위: {{ member['순위'] }})</li>
-            {% endfor %}
-        </ul>
-        <p><strong>요약:</strong> 총 {{ summary_3.total }}명 (여자 {{ summary_3.female }}명 / 남자 {{ summary_3.male }}명)</p>
-
-        {% if team_match_results_3 %} {# 매칭 3 팀 매칭 표 추가 #}
-        <table class="team-match-table">
-            <thead>
-                <tr>
-                    <th>코트</th>
-                    <th>팀 A</th>
-                    <th>팀 B</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for match in team_match_results_3 %}
-                <tr>
-                    <td>{{ match.court }}</td>
-                    <td>
-                        {% for member in match.team_a %}
-                            {{ member['이름'] }} ({{ member['성별'] }}, {{ member['순위'] }}위)<br>
-                        {% endfor %}
-                    </td>
-                    <td>
-                        {% for member in match.team_b %}
-                            {{ member['이름'] }} ({{ member['성별'] }}, {{ member['순위'] }}위)<br>
-                        {% endfor %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% endif %}
-
     </div>
+
+    <hr>
+
+    <h2>매칭 결과</h2>
+
+    <div class="match-section">
+        <h3>매칭 1</h3>
+        <div class="match-summary">
+            요약: 총 {{ summary_1.total }}명 (여자 {{ summary_1.female }}명 / 남자 {{ summary_1.male }}명)
+        </div>
+        {% if participants_1 %}
+            <h4>선발된 12명:</h4>
+            <p>
+                {% for p in participants_1 %}
+                    {{ p.이름 }}({{ p.순위 }}위, {{ p.성별 }}){% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+            {% if team_match_results_1 %}
+                <h4>대진표:</h4>
+                <table class="team-table">
+                    <thead>
+                        <tr>
+                            <th>코트</th>
+                            <th>팀 A</th>
+                            <th>vs</th>
+                            <th>팀 B</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for match in team_match_results_1 %}
+                        <tr>
+                            <td>{{ match.court }}</td>
+                            <td>
+                                {% for player in match.team_a %}
+                                    {{ player.성별 }}{{ player.순위 }}위 {% if not loop.last %}/{% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>vs</td>
+                            <td>
+                                {% for player in match.team_b %}
+                                    {{ player.성별 }}{{ player.순위 }}위 {% if not loop.last %}/{% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>매칭 1 대진표를 생성할 수 없습니다. 참여자 수가 12명이 아니거나, 성별 구성에 해당하는 대진표 규칙이 없습니다.</p>
+            {% endif %}
+        {% else %}
+            <p>매칭 1에 선택된 참여자가 없습니다.</p>
+        {% endif %}
+    </div>
+
+    <hr>
+
+    <div class="match-section">
+        <h3>매칭 2</h3>
+        <div class="match-summary">
+            요약: 총 {{ summary_2.total }}명 (여자 {{ summary_2.female }}명 / 남자 {{ summary_2.male }}명)
+        </div>
+        {% if participants_2 %}
+            <h4>선발된 12명:</h4>
+            <p>
+                {% for p in participants_2 %}
+                    {{ p.이름 }}({{ p.순위 }}위, {{ p.성별 }}){% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+            {% if team_match_results_2 %}
+                <h4>대진표:</h4>
+                <table class="team-table">
+                    <thead>
+                        <tr>
+                            <th>코트</th>
+                            <th>팀 A</th>
+                            <th>vs</th>
+                            <th>팀 B</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for match in team_match_results_2 %}
+                        <tr>
+                            <td>{{ match.court }}</td>
+                            <td>
+                                {% for player in match.team_a %}
+                                    {{ player.성별 }}{{ player.순위 }}위 {% if not loop.last %}/{% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>vs</td>
+                            <td>
+                                {% for player in match.team_b %}
+                                    {{ player.성별 }}{{ player.순위 }}위 {% if not loop.last %}/{% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>매칭 2 대진표를 생성할 수 없습니다. 참여자 수가 12명이 아니거나, 성별 구성에 해당하는 대진표 규칙이 없습니다.</p>
+            {% endif %}
+        {% else %}
+            <p>매칭 2에 선택된 참여자가 없습니다.</p>
+        {% endif %}
+    </div>
+
+    <hr>
+
+    <div class="match-section">
+        <h3>매칭 3</h3>
+        <div class="match-summary">
+            요약: 총 {{ summary_3.total }}명 (여자 {{ summary_3.female }}명 / 남자 {{ summary_3.male }}명)
+        </div>
+        {% if participants_3 %}
+            <h4>선발된 12명:</h4>
+            <p>
+                {% for p in participants_3 %}
+                    {{ p.이름 }}({{ p.순위 }}위, {{ p.성별 }}){% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+            {% if team_match_results_3 %}
+                <h4>대진표:</h4>
+                <table class="team-table">
+                    <thead>
+                        <tr>
+                            <th>코트</th>
+                            <th>팀 A</th>
+                            <th>vs</th>
+                            <th>팀 B</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for match in team_match_results_3 %}
+                        <tr>
+                            <td>{{ match.court }}</td>
+                            <td>
+                                {% for player in match.team_a %}
+                                    {{ player.성별 }}{{ player.순위 }}위 {% if not loop.last %}/{% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>vs</td>
+                            <td>
+                                {% for player in match.team_b %}
+                                    {{ player.성별 }}{{ player.순위 }}위 {% if not loop.last %}/{% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>매칭 3 대진표를 생성할 수 없습니다. 참여자 수가 12명이 아니거나, 성별 구성에 해당하는 대진표 규칙이 없습니다.</p>
+            {% endif %}
+        {% else %}
+            <p>매칭 3에 선택된 참여자가 없습니다.</p>
+        {% endif %}
+    </div>
+
 </body>
 </html>
