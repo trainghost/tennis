@@ -73,6 +73,11 @@ def members():
     team_match_results_1 = []
     team_match_results_2 = []
     team_match_results_3 = []
+    
+    # 선발되지 않은 참여자 명단 초기화
+    non_selected_participants_1 = []
+    non_selected_participants_2 = []
+    non_selected_participants_3 = []
 
 
     if request.method == 'POST':
@@ -105,7 +110,7 @@ def members():
     # 순위에 따라 정렬하여 매칭 선발에 사용 (필요 시)
     all_selected_participants_sorted = sorted(all_selected_participants, key=lambda x: x['순위'])
     # 랜덤 선택을 위해 복사본을 만들어 섞음
-    random_candidates = list(all_selected_participants) # 원본 members_data의 참조를 유지해야 하므로, deepcopy 대신 shallow copy 후 인스턴스 ID로 비교
+    random_candidates = list(all_selected_participants) # 원본 members_data의 참조를 유지해야 하므로, shallow copy 후 인스턴스 ID로 비교
     random.shuffle(random_candidates)
 
 
@@ -126,6 +131,10 @@ def members():
     participants_1 = participants_1[:12] # 최종적으로 12명만 유지
     participants_1 = sorted(participants_1, key=lambda x: x['순위']) # 최종적으로 순위 순으로 정렬
 
+    # 매칭 1에 선발되지 않은 참여자 명단
+    p1_ids = {id(p) for p in participants_1}
+    non_selected_participants_1 = sorted([p for p in all_selected_participants if id(p) not in p1_ids], key=lambda x: x['순위'])
+
 
     # --- 매칭 2 참여자 선정 로직 ---
     # 1. 일퇴에 체크한 사람 포함
@@ -137,11 +146,11 @@ def members():
     participants_2.extend(m2_late)
 
     # 3. 참여 체크한 사람 중 매칭 1에 포함되지 않은 사람 포함
-    m1_ids = {id(p) for p in participants_1} # 매칭 1 참여자의 고유 ID 집합
-    m2_not_in_m1 = [p for p in all_selected_participants if id(p) not in m1_ids and p not in participants_2]
+    m1_ids_for_m2_check = {id(p) for p in participants_1} # 매칭 1 참여자의 고유 ID 집합
+    m2_not_in_m1 = [p for p in all_selected_participants_sorted if id(p) not in m1_ids_for_m2_check and p not in participants_2]
     if len(participants_2) < 12:
         needed = 12 - len(participants_2)
-        participants_2.extend(sorted(m2_not_in_m1, key=lambda x: x['순위'])[:needed]) # 순위순으로 채움 (랜덤 대신)
+        participants_2.extend(m2_not_in_m1[:needed]) # 순위순으로 채움 (랜덤 대신)
 
     # 4. 12명이 안되면 참여 체크한 사람 중에 랜덤으로 추가
     if len(participants_2) < 12:
@@ -151,6 +160,10 @@ def members():
     
     participants_2 = participants_2[:12] # 최종적으로 12명만 유지
     participants_2 = sorted(participants_2, key=lambda x: x['순위']) # 최종적으로 순위 순으로 정렬
+
+    # 매칭 2에 선발되지 않은 참여자 명단
+    p2_ids = {id(p) for p in participants_2}
+    non_selected_participants_2 = sorted([p for p in all_selected_participants if id(p) not in p2_ids], key=lambda x: x['순위'])
 
 
     # --- 매칭 3 참여자 선정 로직 ---
@@ -163,11 +176,11 @@ def members():
     participants_3.extend(m3_late)
 
     # 3. 참여 체크한 사람 중 매칭 2에 포함되지 않은 사람 포함
-    m2_ids = {id(p) for p in participants_2} # 매칭 2 참여자의 고유 ID 집합
-    m3_not_in_m2 = [p for p in all_selected_participants if id(p) not in m2_ids and p not in participants_3]
+    m2_ids_for_m3_check = {id(p) for p in participants_2} # 매칭 2 참여자의 고유 ID 집합
+    m3_not_in_m2 = [p for p in all_selected_participants_sorted if id(p) not in m2_ids_for_m3_check and p not in participants_3]
     if len(participants_3) < 12:
         needed = 12 - len(participants_3)
-        participants_3.extend(sorted(m3_not_in_m2, key=lambda x: x['순위'])[:needed]) # 순위순으로 채움 (랜덤 대신)
+        participants_3.extend(m3_not_in_m2[:needed]) # 순위순으로 채움 (랜덤 대신)
 
     # 4. 12명이 안되면 참여 체크한 사람 중에 랜덤으로 추가
     if len(participants_3) < 12:
@@ -177,6 +190,10 @@ def members():
 
     participants_3 = participants_3[:12] # 최종적으로 12명만 유지
     participants_3 = sorted(participants_3, key=lambda x: x['순위']) # 최종적으로 순위 순으로 정렬
+
+    # 매칭 3에 선발되지 않은 참여자 명단
+    p3_ids = {id(p) for p in participants_3}
+    non_selected_participants_3 = sorted([p for p in all_selected_participants if id(p) not in p3_ids], key=lambda x: x['순위'])
 
 
     # 성별 요약 계산
@@ -337,7 +354,10 @@ def members():
         summary_3=summary_3,
         team_match_results_1=team_match_results_1,
         team_match_results_2=team_match_results_2,
-        team_match_results_3=team_match_results_3
+        team_match_results_3=team_match_results_3,
+        non_selected_participants_1=non_selected_participants_1, # 추가
+        non_selected_participants_2=non_selected_participants_2, # 추가
+        non_selected_participants_3=non_selected_participants_3  # 추가
     )
 
 
