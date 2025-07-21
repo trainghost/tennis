@@ -32,9 +32,7 @@
                         <th>순위</th>
                         <th>이름</th>
                         <th>성별</th>
-                        <th>매칭 1 참여</th>
-                        <th>매칭 2 참여</th>
-                        <th>매칭 3 참여</th>
+                        <th>매칭 참여</th> {# 매칭 참여를 한 칸으로 통일 #}
                         <th>일퇴 (매칭1)</th>
                         <th>늦참 (매칭1)</th>
                         <th>순위 수정</th>
@@ -47,13 +45,7 @@
                         <td>{{ member.이름 }}</td>
                         <td>{{ member.성별 }}</td>
                         <td>
-                            <input type="checkbox" name="match1_{{ member.이름 }}" {% if member.매칭1_참여 %}checked{% endif %}>
-                        </td>
-                        <td>
-                            <input type="checkbox" name="match2_{{ member.이름 }}" {% if member.매칭2_참여 %}checked{% endif %}>
-                        </td>
-                        <td>
-                            <input type="checkbox" name="match3_{{ member.이름 }}" {% if member.매칭3_참여 %}checked{% endif %}>
+                            <input type="checkbox" name="participate_{{ member.이름 }}" {% if member.참여 %}checked{% endif %}>
                         </td>
                         <td>
                             <input type="checkbox" name="early_{{ loop.index0 }}" {% if member.일퇴 %}checked{% endif %}>
