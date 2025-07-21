@@ -175,12 +175,14 @@ def members():
     m3_late = [p for p in all_selected_participants if p.get('늦참') and p not in participants_3]
     participants_3.extend(m3_late)
 
-    # 3. 참여 체크한 사람 중 매칭 2에 포함되지 않은 사람 포함
-    m2_ids_for_m3_check = {id(p) for p in participants_2} # 매칭 2 참여자의 고유 ID 집합
-    m3_not_in_m2 = [p for p in all_selected_participants_sorted if id(p) not in m2_ids_for_m3_check and p not in participants_3]
+    # 3. 참여 체크한 사람 중 매칭 1과 매칭 2에 모두 포함되지 않은 사람 포함 (순위순)
+    # 매칭 1과 매칭 2의 참여자 ID 집합
+    all_prev_matching_ids = {id(p) for p in participants_1}.union({id(p) for p in participants_2})
+    
+    m3_not_in_m1_m2 = [p for p in all_selected_participants_sorted if id(p) not in all_prev_matching_ids and p not in participants_3]
     if len(participants_3) < 12:
         needed = 12 - len(participants_3)
-        participants_3.extend(m3_not_in_m2[:needed]) # 순위순으로 채움 (랜덤 대신)
+        participants_3.extend(m3_not_in_m1_m2[:needed]) # 순위순으로 채움
 
     # 4. 12명이 안되면 참여 체크한 사람 중에 랜덤으로 추가
     if len(participants_3) < 12:
@@ -355,9 +357,9 @@ def members():
         team_match_results_1=team_match_results_1,
         team_match_results_2=team_match_results_2,
         team_match_results_3=team_match_results_3,
-        non_selected_participants_1=non_selected_participants_1, # 추가
-        non_selected_participants_2=non_selected_participants_2, # 추가
-        non_selected_participants_3=non_selected_participants_3  # 추가
+        non_selected_participants_1=non_selected_participants_1, 
+        non_selected_participants_2=non_selected_participants_2, 
+        non_selected_participants_3=non_selected_participants_3 
     )
 
 
