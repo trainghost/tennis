@@ -33,8 +33,8 @@
                         <th>이름</th>
                         <th>성별</th>
                         <th>매칭 참여</th> {# 매칭 참여를 한 칸으로 통일 #}
-                        <th>일퇴 (매칭1)</th>
-                        <th>늦참 (매칭1)</th>
+                        <th>일퇴</th> {# 텍스트 수정 #}
+                        <th>늦참</th> {# 텍스트 수정 #}
                         <th>순위 수정</th>
                     </tr>
                 </thead>
@@ -102,13 +102,13 @@
                             <td>{{ match.court }}</td>
                             <td>
                                 {% for player in match.team_a %}
-                                    {{ player.성별 }}{{ player.순위 }}위 {% if not loop.last %}/{% endif %}
+                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %} {# 이름(순위)으로 표시 #}
                                 {% endfor %}
                             </td>
                             <td>vs</td>
                             <td>
                                 {% for player in match.team_b %}
-                                    {{ player.성별 }}{{ player.순위 }}위 {% if not loop.last %}/{% endif %}
+                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %} {# 이름(순위)으로 표시 #}
                                 {% endfor %}
                             </td>
                         </tr>
@@ -154,13 +154,13 @@
                             <td>{{ match.court }}</td>
                             <td>
                                 {% for player in match.team_a %}
-                                    {{ player.성별 }}{{ player.순위 }}위 {% if not loop.last %}/{% endif %}
+                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %} {# 이름(순위)으로 표시 #}
                                 {% endfor %}
                             </td>
                             <td>vs</td>
                             <td>
                                 {% for player in match.team_b %}
-                                    {{ player.성별 }}{{ player.순위 }}위 {% if not loop.last %}/{% endif %}
+                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %} {# 이름(순위)으로 표시 #}
                                 {% endfor %}
                             </td>
                         </tr>
@@ -206,13 +206,13 @@
                             <td>{{ match.court }}</td>
                             <td>
                                 {% for player in match.team_a %}
-                                    {{ player.성별 }}{{ player.순위 }}위 {% if not loop.last %}/{% endif %}
+                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %} {# 이름(순위)으로 표시 #}
                                 {% endfor %}
                             </td>
                             <td>vs</td>
                             <td>
                                 {% for player in match.team_b %}
-                                    {{ player.성별 }}{{ player.순위 }}위 {% if not loop.last %}/{% endif %}
+                                    {{ player.이름 }}({{ player.순위 }}위){% if not loop.last %}/{% endif %} {# 이름(순위)으로 표시 #}
                                 {% endfor %}
                             </td>
                         </tr>
