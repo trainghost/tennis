@@ -62,7 +62,7 @@ def upload():
         if 'last_match_results' in session:
             session.pop('last_match_results', None)
         
-        return redirect(url_for('members'))
+        return redirect(url_for('members')) # 파일 업로드 후에도 PRG 패턴 적용
     return "파일 업로드 실패!"
 
 
@@ -386,6 +386,10 @@ def members():
             'non_selected_participants_2': non_selected_participants_2,
             'non_selected_participants_3': non_selected_participants_3
         }
+        
+        # PRG 패턴 적용: POST 요청 처리 후 GET 요청으로 리다이렉션
+        return redirect(url_for('members')) 
+        
     else: # GET 요청일 경우, 세션에서 이전 매칭 결과를 불러옴
         if 'last_match_results' in session:
             last_results = session['last_match_results']
