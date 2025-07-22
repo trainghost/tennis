@@ -220,7 +220,7 @@ def members():
     # 매칭 1 대진표 (오버라이드 로직 포함)
     if summary_1['total'] == 12:
         female_members_1 = sorted([p for p in participants_1 if p['성별'] == '여'], key=lambda x: x['순위'])
-        male_members_1 = sorted([p       for p in participants_1 if p['성별'] == '남'], key=lambda x: x['순위'])
+        male_members_1 = sorted([p for p in participants_1 if p['성별'] == '남'], key=lambda x: x['순위'])
 
         if summary_1['female'] == 5 and summary_1['male'] == 7:
             team_match_results_1 = [
@@ -228,7 +228,7 @@ def members():
                 {'court': '4번 코트', 'team_a': [female_members_1[0], male_members_1[0]], 'team_b': [male_members_1[5], male_members_1[6]]}, # 여자1위, 남자1위 vs 남자6위, 남자7위
                 {'court': '5번 코트', 'team_a': [male_members_1[1], male_members_1[4]], 'team_b': [male_members_1[2], male_members_1[3]]}  # 남자2위, 남자5위 vs 남자3위, 남자4위
             ]
-        elif summary_1['female'] == 4 and summary_1['male'] == 8:
+        elif summary_1['female'] == 4 and summary_1['male'] == 8: # 매칭 1 - 여자 4명 로직 변경 (이미지 반영)
             team_match_results_1 = [
                 {'court': '3번 코트', 'team_a': [female_members_1[0], female_members_1[3]], 'team_b': [female_members_1[1], female_members_1[2]]}, # 여자1위, 여자4위 vs 여자2위, 여자3위
                 {'court': '4번 코트', 'team_a': [male_members_1[0], male_members_1[7]], 'team_b': [male_members_1[1], male_members_1[6]]}, # 남자1위, 남자8위 vs 남자2위, 남자7위
@@ -270,10 +270,10 @@ def members():
                 {'court': '4번 코트', 'team_a': [female_members_2[2], male_members_2[2]], 'team_b': [female_members_2[3], male_members_2[3]]}, # 여자3위, 남자3위 vs 여자4위, 남자4위
                 {'court': '5번 코트', 'team_a': [female_members_2[4], male_members_2[4]], 'team_b': [male_members_2[5], male_members_2[6]]}  # 여자5위, 남자5위 vs 남자6위, 남자7위
             ]
-        elif summary_2['female'] == 4 and summary_2['male'] == 8:
+        elif summary_2['female'] == 4 and summary_2['male'] == 8: # 매칭 2 - 여자 4명 로직 변경 (이미지 반영)
             team_match_results_2 = [
-                {'court': '3번 코트', 'team_a': [male_members_2[0], female_members_2[0]], 'team_b': [male_members_2[1], female_members_2[1]]}, # 남자1위, 여자1위 vs 남자2위, 여자2위
-                {'court': '4번 코트', 'team_a': [male_members_2[2], female_members_2[2]], 'team_b': [male_members_2[3], female_members_2[3]]}, # 남자3위, 여자3위 vs 남자4위, 여자4위
+                {'court': '3번 코트', 'team_a': [female_members_2[0], male_members_2[3]], 'team_b': [female_members_2[1], male_members_2[2]]}, # 여자1위, 남자4위 vs 여자2위, 남자3위
+                {'court': '4번 코트', 'team_a': [female_members_2[2], male_members_2[1]], 'team_b': [female_members_2[3], male_members_2[0]]}, # 여자3위, 남자2위 vs 여자4위, 남자1위
                 {'court': '5번 코트', 'team_a': [male_members_2[4], male_members_2[7]], 'team_b': [male_members_2[5], male_members_2[6]]}  # 남자5위, 남자8위 vs 남자6위, 남자7위
             ]
         elif summary_2['female'] == 3 and summary_2['male'] == 9:
@@ -312,10 +312,10 @@ def members():
                 {'court': '4번 코트', 'team_a': [male_members_3[0], female_members_3[4]], 'team_b': [male_members_3[6], female_members_3[2]]}, # 남자1위, 여자5위 vs 남자7위, 여자3위
                 {'court': '5번 코트', 'team_a': [female_members_3[1], male_members_3[2]], 'team_b': [male_members_3[4], male_members_3[5]]}  # 여자2위, 남자3위 vs 남자5위, 남자6위
             ]
-        elif summary_3['female'] == 4 and summary_3['male'] == 8:
+        elif summary_3['female'] == 4 and summary_3['male'] == 8: # 매칭 3 - 여자 4명 로직 변경 (이미지 반영)
             team_match_results_3 = [
-                {'court': '3번 코트', 'team_a': [male_members_3[5], female_members_3[0]], 'team_b': [male_members_3[4], female_members_3[1]]}, # 남자6위, 여자1위 vs 남자5위, 여자2위
-                {'court': '4번 코트', 'team_a': [male_members_3[7], female_members_3[2]], 'team_b': [male_members_3[6], female_members_3[3]]}, # 남자8위, 여자3위 vs 남자7위, 여자4위
+                {'court': '3번 코트', 'team_a': [female_members_3[0], male_members_3[7]], 'team_b': [female_members_3[3], male_members_3[4]]}, # 여자1위, 남자8위 vs 여자4위, 남자5위
+                {'court': '4번 코트', 'team_a': [female_members_3[1], male_members_3[6]], 'team_b': [female_members_3[2], male_members_3[5]]}, # 여자2위, 남자7위 vs 여자3위, 남자6위
                 {'court': '5번 코트', 'team_a': [male_members_3[0], male_members_3[3]], 'team_b': [male_members_3[1], male_members_3[2]]}  # 남자1위, 남자4위 vs 남자2위, 남자3위
             ]
         elif summary_3['female'] == 3 and summary_3['male'] == 9:
