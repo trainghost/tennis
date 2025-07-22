@@ -3,234 +3,313 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원 명단 및 매칭</title>
+    <title>회원 목록 및 매칭</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
-        /*
-        ******************************************************************
-        여기에 이전에 사용하시던 '예쁜' CSS 스타일 코드를 모두 붙여넣으세요.
-        이 부분은 비어 있으므로, 직접 채워 넣으셔야 합니다.
-        ******************************************************************
-        */
-
-        /*
-        아래는 제가 기능 구현을 위해 추가했던 기본 스타일입니다.
-        위에 붙여넣을 기존 CSS와 중복되거나 충돌한다면 조절하거나 삭제하셔도 됩니다.
-        */
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f7f6; color: #333; }
-        .container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-        .section {
-            background-color: #ffffff;
-            border: 1px solid #e0e0e0;
+        body {
+            background-color: #f8f9fa; /* 밝은 회색 배경 */
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .container {
+            max-width: 1200px; /* 데스크톱에서 너무 넓어지는 것을 방지 */
+        }
+        .match-section {
+            margin-bottom: 30px;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            flex: 1;
-            min-width: 320px;
-            max-width: 450px;
+            background-color: #ffffff; /* 흰색 배경 */
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.08); /* 부드러운 그림자 */
         }
-        h1 { text-align: center; color: #0056b3; margin-bottom: 30px; }
-        h2 { color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; }
-        h3 { color: #555; margin-top: 25px; margin-bottom: 10px; }
-        ul { list-style-type: none; padding: 0; }
-        li { margin-bottom: 5px; padding: 3px 0; }
-        .member-list { margin-top: 20px; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03); }
-        .member-item { display: flex; align-items: center; margin-bottom: 10px; background-color: #f8f8f8; padding: 8px 12px; border-radius: 5px; border: 1px solid #eee; }
-        .member-item label { margin-left: 8px; margin-right: 15px; font-weight: bold; min-width: 100px; }
-        .member-item input[type="number"] {
-            width: 60px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        .summary-card {
+            border-left: 5px solid #007bff; /* 파란색 좌측 테두리 */
+            border-radius: 5px;
+            background-color: #e9f5ff; /* 연한 파란색 배경 */
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .summary-card h5 {
+            margin-bottom: 0;
+            color: #0056b3;
+        }
+        .table-match-results th, .table-match-results td {
             text-align: center;
-            margin-right: 10px;
+            vertical-align: middle;
+            padding: 0.75rem; /* 셀 패딩 */
         }
-        .member-item input[type="checkbox"] { transform: scale(1.2); margin-right: 5px; }
-        .member-item label[for^="early_"], .member-item label[for^="late_"] { font-weight: normal; margin-right: 15px; min-width: unset; }
-
-        .match-result { margin-top: 20px; padding: 15px; background-color: #eaf6ff; border-radius: 8px; border: 1px solid #cce0ff; }
-        .match-result h4 { margin-top: 0; margin-bottom: 10px; color: #0056b3; font-size: 1.1em; }
-        .match-teams { display: flex; justify-content: space-around; align-items: center; padding: 10px 0; }
-        .team { text-align: center; flex: 1; }
-        .team-a, .team-b { font-weight: bold; color: #007bff; font-size: 1.1em; }
-        .vs { margin: 0 15px; font-weight: bold; color: #666; font-size: 1.2em; }
-        button {
-            display: block;
-            width: fit-content;
-            margin: 25px auto 0;
-            padding: 12px 25px;
-            background-color: #28a745; /* Green for action */
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 17px;
+        .table-match-results td:first-child {
             font-weight: bold;
-            transition: background-color 0.3s ease;
+            color: #495057;
         }
-        button:hover { background-color: #218838; }
-        .summary { margin-bottom: 20px; padding: 15px; background-color: #e2f0d9; border-radius: 8px; border: 1px solid #b7e09e; color: #3a753a; }
-        .summary p { margin: 5px 0; font-size: 0.95em; }
-        hr { border: 0; height: 1px; background: #dcdcdc; margin: 30px 0; }
-        .non-selected-section { margin-top: 30px; padding-top: 20px; border-top: 1px dashed #ccc; }
-        .non-selected-section h3 { color: #dc3545; } /* Red for caution */
-        .non-selected-section ul { padding-left: 20px; }
-        .non-selected-section li { color: #666; }
+        .table-match-results thead th {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .table-match-results tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+        .text-muted-small {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        .non-selected-list {
+            list-style: none;
+            padding-left: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .non-selected-list li {
+            background-color: #e2e6ea;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        /* 미디어 쿼리: 작은 화면 (모바일) 최적화 */
+        @media (max-width: 767.98px) {
+            h2, h3, h4 {
+                font-size: 1.5rem; /* 모바일에서 제목 크기 조정 */
+            }
+            .summary-card h5 {
+                font-size: 1.1rem;
+            }
+            .table th, .table td {
+                padding: 0.5rem; /* 모바일에서 테이블 셀 패딩 줄이기 */
+                font-size: 0.9em; /* 모바일에서 텍스트 크기 조정 */
+            }
+            .form-control-sm {
+                width: 70px; /* 순위 수정 입력란 너비 조정 */
+            }
+            .match-section {
+                padding: 15px;
+            }
+            .table-match-results td:first-child {
+                min-width: 80px; /* 코트명 컬럼 최소 너비 확보 */
+            }
+            .non-selected-list {
+                flex-direction: column; /* 미선발자 목록 세로로 정렬 */
+                gap: 5px;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>회원 명단</h1>
+    <div class="container mt-5">
+        <h2 class="mb-4 text-center text-primary">회원 목록 및 매칭 설정 📋</h2>
 
-    <form action="/members" method="post">
-        <div class="member-list">
-            {% for member in members %}
-                <div class="member-item">
-                    <input type="checkbox" id="participate_{{ member.이름 }}" name="participate_{{ member.이름 }}" {% if member.참여 %}checked{% endif %}>
-                    <label for="participate_{{ member.이름 }}">{{ member.이름 }} ({{ member.성별 }})</label>
-                    순위: <input type="number" name="rank_{{ member.이름 }}" value="{{ member.순위 }}" min="1" required>
-                    <input type="checkbox" id="early_{{ loop.index0 }}" name="early_{{ loop.index0 }}" {% if member.일퇴 %}checked{% endif %}>
-                    <label for="early_{{ loop.index0 }}">일퇴</label>
-                    <input type="checkbox" id="late_{{ loop.index0 }}" name="late_{{ loop.index0 }}" {% if member.늦참 %}checked{% endif %}>
-                    <label for="late_{{ loop.index0 }}">늦참</label>
-                </div>
-            {% endfor %}
-        </div>
-        <button type="submit">선택 저장 및 매칭 결과 보기</button>
-    </form>
-
-    <hr>
-
-    <div class="container">
-        <div class="section">
-            <h2>매칭 1</h2>
-            <div class="summary">
-                <p>총 인원: {{ summary_1.total }}명</p>
-                <p>남자: {{ summary_1.male }}명</p>
-                <p>여자: {{ summary_1.female }}명</p>
+        <div class="match-section mb-5">
+            <h3 class="mb-3 text-secondary">전체 회원 목록 (참여/순위 설정)</h3>
+            <div class="alert alert-info" role="alert">
+                참여할 회원을 선택하고, 필요시 순위를 수정해주세요. 
+                <span class="d-block d-md-inline">매칭은 **'참여'에 체크된 회원들** 중에서 이루어집니다.</span>
             </div>
+            <div class="table-responsive">
+                <form action="/members" method="post" class="needs-validation" novalidate>
+                    <table class="table table-hover table-striped caption-top">
+                        <caption>* 순위를 수정하려면 숫자를 입력 후 '저장' 버튼을 누르세요.</caption>
+                        <thead>
+                            <tr>
+                                <th>순위</th>
+                                <th>이름</th>
+                                <th>성별</th>
+                                <th class="text-center">참여</th>
+                                <th class="text-center">일퇴</th>
+                                <th class="text-center">늦참</th>
+                                <th>순위 수정</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for member in members %}
+                            <tr>
+                                <td>{{ member.순위 }}</td>
+                                <td>{{ member.이름 }}</td>
+                                <td>{{ member.성별 }}</td>
+                                <td class="text-center">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="participate_{{ member.이름 }}" id="participate_{{ member.이름 }}" {% if member.참여 %}checked{% endif %}>
+                                        <label class="form-check-label visually-hidden" for="participate_{{ member.이름 }}">참여</label>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="early_{{ loop.index0 }}" id="early_{{ loop.index0 }}" {% if member.일퇴 %}checked{% endif %}>
+                                        <label class="form-check-label visually-hidden" for="early_{{ loop.index0 }}">일퇴</label>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="late_{{ loop.index0 }}" id="late_{{ loop.index0 }}" {% if member.늦참 %}checked{% endif %}>
+                                        <label class="form-check-label visually-hidden" for="late_{{ loop.index0 }}">늦참</label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm" name="rank_{{ member.이름 }}" value="{{ member.순위 }}" min="1">
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button type="submit" class="btn btn-success mt-3 w-100">선택 저장 및 매칭 결과 보기 ✅</button>
+                </form>
+            </div>
+        </div>
+
+        <hr class="my-5">
+        <div class="match-section">
+            <h3 class="mb-3 text-primary">🏆 매칭 1 결과 (코트 3, 4, 5)</h3>
+            <div class="summary-card">
+                <h5 class="card-title">요약: 총 {{ summary_1.total }}명 참여 (여자 {{ summary_1.female }}명 / 남자 {{ summary_1.male }}명)</h5>
+            </div>
+
             {% if team_match_results_1 %}
-                {% for match in team_match_results_1 %}
-                    <div class="match-result">
-                        <h4>{{ match.court }}</h4>
-                        <div class="match-teams">
-                            <div class="team team-a">
-                                {% for player in match.team_a %}
-                                    {{ player.이름 }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            </div>
-                            <div class="vs">VS</div>
-                            <div class="team team-b">
-                                {% for player in match.team_b %}
-                                    {{ player.이름 }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
+            <h4 class="mb-3 text-center">매칭 1 대진표</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-match-results">
+                    <thead>
+                        <tr>
+                            <th>코트</th>
+                            <th colspan="2">팀 A</th>
+                            <th>vs</th>
+                            <th colspan="2">팀 B</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for match in team_match_results_1 %}
+                        <tr>
+                            <td>{{ match.court }}</td>
+                            <td>{{ match.team_a[0].이름 }} <span class="text-muted-small">({{ match.team_a[0].순위 }}위)</span></td>
+                            <td>{{ match.team_a[1].이름 }} <span class="text-muted-small">({{ match.team_a[1].순위 }}위)</span></td>
+                            <td></td> {# "vs"는 th에 있으므로 여기는 비워둠 #}
+                            <td>{{ match.team_b[0].이름 }} <span class="text-muted-small">({{ match.team_b[0].순위 }}위)</span></td>
+                            <td>{{ match.team_b[1].이름 }} <span class="text-muted-small">({{ match.team_b[1].순위 }}위)</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
-                <p>매칭 1 결과가 없습니다. 인원을 확인하거나 '선택 저장 및 매칭 결과 보기' 버튼을 눌러주세요.</p>
+            <p class="text-muted text-center">매칭 1 대진표가 생성되지 않았습니다. (참여 인원 부족 또는 조건 불일치)</p>
             {% endif %}
 
-            <div class="non-selected-section">
-                <h3>매칭 1 미배정 인원: {{ non_selected_participants_1 | length }}명</h3>
-                {% if non_selected_participants_1 %}
-                    <ul>
-                    {% for p in non_selected_participants_1 %}
-                        <li>{{ p['순위'] }}위 {{ p['이름'] }} ({{ p['성별'] }})</li>
-                    {% endfor %}
-                    </ul>
-                {% else %}
-                    <p>매칭 1에 미배정된 인원이 없습니다.</p>
-                {% endif %}
-            </div>
+            {% if non_selected_participants_1 %}
+            <h5 class="mt-4 text-warning">매칭 1 미선발 참여자 🚧:</h5>
+            <ul class="non-selected-list">
+                {% for p in non_selected_participants_1 %}
+                <li>{{ p.이름 }} ({{ p.순위 }}위)</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
         </div>
 
-        <div class="section">
-            <h2>매칭 2</h2>
-            <div class="summary">
-                <p>총 인원: {{ summary_2.total }}명</p>
-                <p>남자: {{ summary_2.male }}명</p>
-                <p>여자: {{ summary_2.female }}명</p>
+        <hr class="my-5">
+        <div class="match-section">
+            <h3 class="mb-3 text-primary">🥈 매칭 2 결과 (코트 3, 4, 5)</h3>
+            <div class="summary-card">
+                <h5 class="card-title">요약: 총 {{ summary_2.total }}명 참여 (여자 {{ summary_2.female }}명 / 남자 {{ summary_2.male }}명)</h5>
             </div>
+
             {% if team_match_results_2 %}
-                {% for match in team_match_results_2 %}
-                    <div class="match-result">
-                        <h4>{{ match.court }}</h4>
-                        <div class="match-teams">
-                            <div class="team team-a">
-                                {% for player in match.team_a %}
-                                    {{ player.이름 }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            </div>
-                            <div class="vs">VS</div>
-                            <div class="team team-b">
-                                {% for player in match.team_b %}
-                                    {{ player.이름 }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
+            <h4 class="mb-3 text-center">매칭 2 대진표</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-match-results">
+                    <thead>
+                        <tr>
+                            <th>코트</th>
+                            <th colspan="2">팀 A</th>
+                            <th>vs</th>
+                            <th colspan="2">팀 B</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for match in team_match_results_2 %}
+                        <tr>
+                            <td>{{ match.court }}</td>
+                            <td>{{ match.team_a[0].이름 }} <span class="text-muted-small">({{ match.team_a[0].순위 }}위)</span></td>
+                            <td>{{ match.team_a[1].이름 }} <span class="text-muted-small">({{ match.team_a[1].순위 }}위)</span></td>
+                            <td></td>
+                            <td>{{ match.team_b[0].이름 }} <span class="text-muted-small">({{ match.team_b[0].순위 }}위)</span></td>
+                            <td>{{ match.team_b[1].이름 }} <span class="text-muted-small">({{ match.team_b[1].순위 }}위)</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
-                <p>매칭 2 결과가 없습니다. 인원을 확인하거나 '선택 저장 및 매칭 결과 보기' 버튼을 눌러주세요.</p>
+            <p class="text-muted text-center">매칭 2 대진표가 생성되지 않았습니다. (참여 인원 부족 또는 조건 불일치)</p>
             {% endif %}
 
-            <div class="non-selected-section">
-                <h3>매칭 2 미배정 인원: {{ non_selected_participants_2 | length }}명</h3>
-                {% if non_selected_participants_2 %}
-                    <ul>
-                    {% for p in non_selected_participants_2 %}
-                        <li>{{ p['순위'] }}위 {{ p['이름'] }} ({{ p['성별'] }})</li>
-                    {% endfor %}
-                    </ul>
-                {% else %}
-                    <p>매칭 2에 미배정된 인원이 없습니다.</p>
-                {% endif %}
-            </div>
+            {% if non_selected_participants_2 %}
+            <h5 class="mt-4 text-warning">매칭 2 미선발 참여자 🚧:</h5>
+            <ul class="non-selected-list">
+                {% for p in non_selected_participants_2 %}
+                <li>{{ p.이름 }} ({{ p.순위 }}위)</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
         </div>
 
-        <div class="section">
-            <h2>매칭 3</h2>
-            <div class="summary">
-                <p>총 인원: {{ summary_3.total }}명</p>
-                <p>남자: {{ summary_3.male }}명</p>
-                <p>여자: {{ summary_3.female }}명</p>
+        <hr class="my-5">
+        <div class="match-section">
+            <h3 class="mb-3 text-primary">🥉 매칭 3 결과 (코트 3, 4, 5)</h3>
+            <div class="summary-card">
+                <h5 class="card-title">요약: 총 {{ summary_3.total }}명 참여 (여자 {{ summary_3.female }}명 / 남자 {{ summary_3.male }}명)</h5>
             </div>
+
             {% if team_match_results_3 %}
-                {% for match in team_match_results_3 %}
-                    <div class="match-result">
-                        <h4>{{ match.court }}</h4>
-                        <div class="match-teams">
-                            <div class="team team-a">
-                                {% for player in match.team_a %}
-                                    {{ player.이름 }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            </div>
-                            <div class="vs">VS</div>
-                            <div class="team team-b">
-                                {% for player in match.team_b %}
-                                    {{ player.이름 }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
+            <h4 class="mb-3 text-center">매칭 3 대진표</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-match-results">
+                    <thead>
+                        <tr>
+                            <th>코트</th>
+                            <th colspan="2">팀 A</th>
+                            <th>vs</th>
+                            <th colspan="2">팀 B</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for match in team_match_results_3 %}
+                        <tr>
+                            <td>{{ match.court }}</td>
+                            <td>{{ match.team_a[0].이름 }} <span class="text-muted-small">({{ match.team_a[0].순위 }}위)</span></td>
+                            <td>{{ match.team_a[1].이름 }} <span class="text-muted-small">({{ match.team_a[1].순위 }}위)</span></td>
+                            <td></td>
+                            <td>{{ match.team_b[0].이름 }} <span class="text-muted-small">({{ match.team_b[0].순위 }}위)</span></td>
+                            <td>{{ match.team_b[1].이름 }} <span class="text-muted-small">({{ match.team_b[1].순위 }}위)</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
-                <p>매칭 3 결과가 없습니다. 인원을 확인하거나 '선택 저장 및 매칭 결과 보기' 버튼을 눌러주세요.</p>
+            <p class="text-muted text-center">매칭 3 대진표가 생성되지 않았습니다. (참여 인원 부족 또는 조건 불일치)</p>
             {% endif %}
 
-            <div class="non-selected-section">
-                <h3>매칭 3 미배정 인원: {{ non_selected_participants_3 | length }}명</h3>
-                {% if non_selected_participants_3 %}
-                    <ul>
-                    {% for p in non_selected_participants_3 %}
-                        <li>{{ p['순위'] }}위 {{ p['이름'] }} ({{ p['성별'] }})</li>
-                    {% endfor %}
-                    </ul>
-                {% else %}
-                    <p>매칭 3에 미배정된 인원이 없습니다.</p>
-                {% endif %}
-            </div>
+            {% if non_selected_participants_3 %}
+            <h5 class="mt-4 text-warning">매칭 3 미선발 참여자 🚧:</h5>
+            <ul class="non-selected-list">
+                {% for p in non_selected_participants_3 %}
+                <li>{{ p.이름 }} ({{ p.순위 }}위)</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="/" class="btn btn-secondary">다시 파일 업로드 🔄</a>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
