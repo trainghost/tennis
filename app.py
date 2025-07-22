@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for
 import pandas as pd
 import os
 import random
@@ -8,13 +8,7 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# 세션 사용을 위한 secret_key 설정 (실제 배포 시에는 더 복잡하고 안전한 값으로 변경해야 합니다)
-app.secret_key = 'your_super_secret_key_for_session_management_12345'
-
-members_data = [] # Global list to store member data
-
-
-# Map for gender based on name
+members_data = []
 gender_map = {
     '장다민': '여', '양승하': '남', '류재리': '여', '우원석': '남',
     '남상훈': '남', '강민구': '남', '임예지': '여', '이준희': '남',
@@ -61,11 +55,7 @@ def upload():
         global members_data
         members_data = extracted_data
         
-        # 파일 업로드 시에는 이전 매칭 결과 초기화 (새로운 멤버 데이터로 시작하므로)
-        if 'last_match_results' in session:
-            session.pop('last_match_results', None)
-        
-        return redirect(url_for('members')) # 파일 업로드 후에도 PRG 패턴 적용
+        return redirect(url_for('members'))
     return "파일 업로드 실패!"
 
 
@@ -73,7 +63,7 @@ def upload():
 def members():
     global members_data
 
-    # Initialize match results variables (for GET request or when not calculated yet)
+    # 매칭 결과 변수들을 초기화
     participants_1 = []
     participants_2 = []
     participants_3 = []
@@ -83,239 +73,302 @@ def members():
     team_match_results_1 = []
     team_match_results_2 = []
     team_match_results_3 = []
+    
+    # 선발되지 않은 참여자 명단 초기화
     non_selected_participants_1 = []
     non_selected_participants_2 = []
     non_selected_participants_3 = []
 
-    # Process POST request: Update member info and generate match results
+
     if request.method == 'POST':
         print("--- POST 요청 수신됨 ---")
-        # print(f"request.form 데이터: {request.form}") # 디버깅용, 실제 서비스에서는 보안상 주의
+        print(f"request.form 데이터: {request.form}")
 
-        # Update members_data based on form submission
-        # Iterate over the original members_data to update it
         for idx, member in enumerate(members_data):
-            # Checkbox values
-            participate_key = f'participate_{member["이름"]}'
-            # '일퇴'와 '늦참' 체크박스는 loop.index0 (즉, idx)로 name이 생성됨
+            participate_key = f'participate_{member["이름"]}' # 단일 참여 체크박스
+            rank_key = f'rank_{member["이름"]}'
             early_key = f'early_{idx}'
             late_key = f'late_{idx}'
 
             member['참여'] = participate_key in request.form
+            
+            # 순위 업데이트
+            received_rank = request.form.get(rank_key)
+            member['순위'] = int(received_rank) if received_rank is not None else member['순위']
+
+            # 일퇴/늦참 업데이트
             member['일퇴'] = early_key in request.form
             member['늦참'] = late_key in request.form
 
-            # Rank value
-            # CRITICAL CHANGE: Get rank directly using the name attribute from HTML
-            rank_key = f'rank_{member["이름"]}'
-            received_rank = request.form.get(rank_key)
-            if received_rank is not None and received_rank.isdigit(): # Ensure it's a digit
-                member['순위'] = int(received_rank)
-            else:
-                # Fallback to current rank if input is empty or invalid
-                print(f"경고: {member['이름']}의 순위가 유효하지 않습니다: '{received_rank}'. 이전 순위 ({member['순위']})를 유지합니다.")
+            # print(f"업데이트된 멤버: {member['이름']}, 참여: {member['참여']}, 순위: {member['순위']}, 일퇴: {member['일퇴']}, 늦참: {member['늦참']}")
 
         print("--- members_data 업데이트 완료 ---")
 
-        # --- All participants for matching are those with '참여' checked ---
-        all_selected_participants = [p for p in members_data if p.get('참여')]
-        all_selected_participants_sorted = sorted(all_selected_participants, key=lambda x: x['순위'])
-        random_candidates = list(all_selected_participants) # 원본 리스트 복사하여 셔플
-        random.shuffle(random_candidates)
-
-        # --- Matching Logic (as previously defined) ---
-
-        # Helper function to create matches for 12 participants
-        def create_matches(participants):
-            if len(participants) != 12:
-                return []
-
-            female_players = sorted([p for p in participants if p['성별'] == '여'], key=lambda x: x['순위'])
-            male_players = sorted([p for p in participants if p['성별'] == '남'], key=lambda x: x['순위'])
-
-            matches = []
-            
-            # Assuming 6 males and 6 females for 3 mixed doubles matches
-            # Or other combinations as per your matching logic
-            
-            # Example for 3 mixed doubles (adjust based on your actual matching rules)
-            # This is a simplified example. Your complex matching logic would go here.
-            
-            # For 3 mixed doubles (3 female, 3 male on each side, total 6 female, 6 male)
-            # This logic assumes you have exactly 6 male and 6 female for a clean 3 mixed doubles setup.
-            # If not, you need to adjust your matching algorithm.
-
-            # Simplified pairing for demonstration. You would replace this with your actual sophisticated logic.
-            # For 12 players, it typically means 3 courts (4 players/court).
-            # If it's 3 mixed doubles, you need 6 females and 6 males.
-            # If it's mixed with some male-male or female-female, the logic changes.
-            
-            # For now, let's assume a generic pairing for 12 participants into 3 courts (4 players each)
-            # This is a placeholder; you need to insert your specific advanced matching logic here.
-            # Example: Pair top female with bottom male, etc.
-            
-            # Simple example: just divide into 3 courts if exactly 12 players
-            court_names = ['코트 3', '코트 4', '코트 5']
-            
-            # For a more robust solution, you'd apply your precise algorithm (e.g., skill-based pairing)
-            # For now, if exactly 12, distribute.
-            
-            # A very basic distribution if you just need to fill courts, not ideal for skill-based
-            shuffled_players = list(participants)
-            random.shuffle(shuffled_players) # Shuffle to make pairs random for this generic example
-
-            # Distribute 12 players into 3 courts, 4 players per court
-            for i in range(3):
-                if len(shuffled_players) >= 4:
-                    court_players = shuffled_players[:4]
-                    shuffled_players = shuffled_players[4:]
-                    
-                    # Assuming for now it's just 2 vs 2, or some other setup.
-                    # This part needs your specific pairing logic for Team A vs Team B.
-                    # For a generic 4-player court, just show them as a group for now.
-                    # You will need to implement specific team_a and team_b selection within each court.
-                    
-                    # For the purpose of getting your UI to show something:
-                    # If you strictly want Team A and Team B, you need to pair them.
-                    # For example, first two players in court_players are team_a, last two are team_b.
-                    if len(court_players) == 4:
-                        matches.append({
-                            'court': court_names[i],
-                            'team_a': [court_players[0], court_players[1]],
-                            'team_b': [court_players[2], court_players[3]]
-                        })
-                    else:
-                        print(f"경고: {court_names[i]}에 4명이 배정되지 않았습니다. 현재 {len(court_players)}명.")
-
-            return matches
+    # 모든 매칭 참여자 풀은 '참여' 체크박스에 체크된 인원들
+    all_selected_participants = [p for p in members_data if p.get('참여')]
+    
+    # 순위에 따라 정렬하여 매칭 선발에 사용 (필요 시)
+    all_selected_participants_sorted = sorted(all_selected_participants, key=lambda x: x['순위'])
+    # 랜덤 선택을 위해 복사본을 만들어 섞음
+    random_candidates = list(all_selected_participants) # 원본 members_data의 참조를 유지해야 하므로, shallow copy 후 인스턴스 ID로 비교
+    random.shuffle(random_candidates)
 
 
-        # Match 1 Generation
-        temp_participants_1 = []
-        temp_participants_1_set = set()
+    # --- 매칭 1 참여자 선정 로직 ---
+    # 1. 일퇴에 체크한 사람 포함 (늦참이 아닌 사람들 중에서)
+    m1_priority_list = [p for p in all_selected_participants if p.get('일퇴') and not p.get('늦참')]
+    participants_1.extend(m1_priority_list)
+    
+    # 2. 12명이 안되면 참여 체크한 사람 중에 랜덤으로 추가 (늦참 체크한 사람은 제외)
+    m1_fill_candidates = [p for p in random_candidates if not p.get('늦참') and p not in participants_1]
+    
+    if len(participants_1) < 12:
+        needed = 12 - len(participants_1)
+        # 이미 추가된 인원 제외 후, 남아있는 후보들에서 랜덤으로 추가
+        eligible_for_random = [p for p in m1_fill_candidates if p not in participants_1]
+        participants_1.extend(eligible_for_random[:needed]) # 무작위로 섞였으니 앞에서부터 필요한 만큼 추가
 
-        # 1. 일퇴인데 늦참 아닌 사람 우선 (최대한 12명 채우기)
-        for p in all_selected_participants_sorted:
-            if p.get('일퇴') and not p.get('늦참') and id(p) not in temp_participants_1_set and len(temp_participants_1) < 12:
-                temp_participants_1.append(p)
-                temp_participants_1_set.add(id(p))
+    participants_1 = participants_1[:12] # 최종적으로 12명만 유지
+    participants_1 = sorted(participants_1, key=lambda x: x['순위']) # 최종적으로 순위 순으로 정렬
 
-        # 2. 나머지 인원을 순위 높은 순으로 채우기 (일퇴/늦참 조건 없는 사람)
-        for p in all_selected_participants_sorted:
-            if id(p) not in temp_participants_1_set and len(temp_participants_1) < 12:
-                temp_participants_1.append(p)
-                temp_participants_1_set.add(id(p))
-        
-        participants_1 = sorted(temp_participants_1, key=lambda x: x['순위'])[:12]
-        p1_ids = {id(p) for p in participants_1}
-        non_selected_participants_1 = sorted([p for p in all_selected_participants if id(p) not in p1_ids], key=lambda x: x['순위'])
-        team_match_results_1 = create_matches(participants_1)
-        summary_1 = count_gender(participants_1)
-
-
-        # Match 2 Generation
-        temp_participants_2 = []
-        temp_participants_2_set = set()
-
-        # 1. 일퇴, 늦참 모두 포함된 사람 우선
-        for p in all_selected_participants_sorted:
-            if (p.get('일퇴') or p.get('늦참')) and id(p) not in temp_participants_2_set and len(temp_participants_2) < 12:
-                temp_participants_2.append(p)
-                temp_participants_2_set.add(id(p))
-        
-        # 2. 매칭 1에 없던 사람 우선 (남은 자리 채우기)
-        for p in all_selected_participants_sorted:
-            if id(p) not in p1_ids and id(p) not in temp_participants_2_set and len(temp_participants_2) < 12:
-                temp_participants_2.append(p)
-                temp_participants_2_set.add(id(p))
-
-        # 3. 남은 인원 중에서 채우기
-        for p in all_selected_participants_sorted:
-            if id(p) not in temp_participants_2_set and len(temp_participants_2) < 12:
-                temp_participants_2.append(p)
-                temp_participants_2_set.add(id(p))
-        
-        participants_2 = sorted(temp_participants_2, key=lambda x: x['순위'])[:12]
-        p2_ids = {id(p) for p in participants_2}
-        non_selected_participants_2 = sorted([p for p in all_selected_participants if id(p) not in p2_ids], key=lambda x: x['순위'])
-        team_match_results_2 = create_matches(participants_2)
-        summary_2 = count_gender(participants_2)
+    # 매칭 1에 선발되지 않은 참여자 명단
+    p1_ids = {id(p) for p in participants_1}
+    non_selected_participants_1 = sorted([p for p in all_selected_participants if id(p) not in p1_ids], key=lambda x: x['순위'])
 
 
-        # Match 3 Generation (Similar logic, potentially different prioritization)
-        temp_participants_3 = []
-        temp_participants_3_set = set()
+    # --- 매칭 2 참여자 선정 로직 ---
+    # 1. 일퇴에 체크한 사람 포함
+    m2_early = [p for p in all_selected_participants if p.get('일퇴')]
+    participants_2.extend(m2_early)
 
-        # 1. 일퇴, 늦참 모두 포함된 사람 우선 (M1, M2와 최대한 다르게)
-        for p in all_selected_participants_sorted:
-            if (p.get('일퇴') or p.get('늦참')) and id(p) not in p1_ids and id(p) not in p2_ids and id(p) not in temp_participants_3_set and len(temp_participants_3) < 12:
-                temp_participants_3.append(p)
-                temp_participants_3_set.add(id(p))
-        
-        # 2. 매칭 1, 2에 모두 없던 사람 우선
-        for p in all_selected_participants_sorted:
-            if id(p) not in p1_ids and id(p) not in p2_ids and id(p) not in temp_participants_3_set and len(temp_participants_3) < 12:
-                temp_participants_3.append(p)
-                temp_participants_3_set.add(id(p))
-        
-        # 3. 남은 인원 중에서 채우기
-        for p in all_selected_participants_sorted:
-            if id(p) not in temp_participants_3_set and len(temp_participants_3) < 12:
-                temp_participants_3.append(p)
-                temp_participants_3_set.add(id(p))
+    # 2. 늦참에 체크한 사람 포함
+    m2_late = [p for p in all_selected_participants if p.get('늦참') and p not in participants_2]
+    participants_2.extend(m2_late)
 
-        participants_3 = sorted(temp_participants_3, key=lambda x: x['순위'])[:12]
-        p3_ids = {id(p) for p in participants_3}
-        non_selected_participants_3 = sorted([p for p in all_selected_participants if id(p) not in p3_ids], key=lambda x: x['순위'])
-        team_match_results_3 = create_matches(participants_3)
-        summary_3 = count_gender(participants_3)
+    # 3. 참여 체크한 사람 중 매칭 1에 포함되지 않은 사람 포함
+    m1_ids_for_m2_check = {id(p) for p in participants_1} # 매칭 1 참여자의 고유 ID 집합
+    m2_not_in_m1 = [p for p in all_selected_participants_sorted if id(p) not in m1_ids_for_m2_check and p not in participants_2]
+    if len(participants_2) < 12:
+        needed = 12 - len(participants_2)
+        participants_2.extend(m2_not_in_m1[:needed]) # 순위순으로 채움 (랜덤 대신)
+
+    # 4. 12명이 안되면 참여 체크한 사람 중에 랜덤으로 추가
+    if len(participants_2) < 12:
+        needed = 12 - len(participants_2)
+        eligible_for_random = [p for p in random_candidates if p not in participants_2]
+        participants_2.extend(eligible_for_random[:needed])
+    
+    participants_2 = participants_2[:12] # 최종적으로 12명만 유지
+    participants_2 = sorted(participants_2, key=lambda x: x['순위']) # 최종적으로 순위 순으로 정렬
+
+    # 매칭 2에 선발되지 않은 참여자 명단
+    p2_ids = {id(p) for p in participants_2}
+    non_selected_participants_2 = sorted([p for p in all_selected_participants if id(p) not in p2_ids], key=lambda x: x['순위'])
 
 
-        # Store results in session
-        session['last_match_results'] = {
-            'members_data': members_data, # Updated members_data
-            'team_match_results_1': team_match_results_1,
-            'summary_1': summary_1,
-            'non_selected_participants_1': non_selected_participants_1,
-            'team_match_results_2': team_match_results_2,
-            'summary_2': summary_2,
-            'non_selected_participants_2': non_selected_participants_2,
-            'team_match_results_3': team_match_results_3,
-            'summary_3': summary_3,
-            'non_selected_participants_3': non_selected_participants_3
-        }
+    # --- 매칭 3 참여자 선정 로직 ---
+    # 1. 일퇴에 체크한 사람 포함
+    m3_early = [p for p in all_selected_participants if p.get('일퇴')]
+    participants_3.extend(m3_early)
 
-        return redirect(url_for('members')) # PRG Pattern: Redirect after POST
+    # 2. 늦참에 체크한 사람 포함
+    m3_late = [p for p in all_selected_participants if p.get('늦참') and p not in participants_3]
+    participants_3.extend(m3_late)
 
-    # Process GET request: Load stored results or display initial state
-    else:
-        if 'last_match_results' in session:
-            last_results = session['last_match_results']
-            members_data = last_results.get('members_data', []) # Load updated members data
-            team_match_results_1 = last_results.get('team_match_results_1', [])
-            summary_1 = last_results.get('summary_1', {'total': 0, 'male': 0, 'female': 0})
-            non_selected_participants_1 = last_results.get('non_selected_participants_1', [])
-            team_match_results_2 = last_results.get('team_match_results_2', [])
-            summary_2 = last_results.get('summary_2', {'total': 0, 'male': 0, 'female': 0})
-            non_selected_participants_2 = last_results.get('non_selected_participants_2', [])
-            team_match_results_3 = last_results.get('team_match_results_3', [])
-            summary_3 = last_results.get('summary_3', {'total': 0, 'male': 0, 'female': 0})
-            non_selected_participants_3 = last_results.get('non_selected_participants_3', [])
-        # else: members_data will be empty initially until file is uploaded and processed
+    # 3. 참여 체크한 사람 중 매칭 1 또는 매칭 2에 포함되지 않은 사람 포함 (순위순)
+    p1_ids_set = {id(p) for p in participants_1}
+    p2_ids_set = {id(p) for p in participants_2}
+    
+    # '매칭 1에 포함되지 않았거나 OR 매칭 2에 포함되지 않은 사람'
+    m3_not_in_m1_or_m2 = [
+        p for p in all_selected_participants_sorted
+        if (id(p) not in p1_ids_set or id(p) not in p2_ids_set) # 매칭 1에 없거나 OR 매칭 2에 없는 사람
+        and p not in participants_3 # 이미 매칭 3에 선발되지 않은 사람
+    ]
+
+    if len(participants_3) < 12:
+        needed = 12 - len(participants_3)
+        participants_3.extend(m3_not_in_m1_or_m2[:needed]) # 순위순으로 채움
+
+    # 4. 12명이 안되면 참여 체크한 사람 중에 랜덤으로 추가
+    if len(participants_3) < 12:
+        needed = 12 - len(participants_3)
+        eligible_for_random = [p for p in random_candidates if p not in participants_3]
+        participants_3.extend(eligible_for_random[:needed])
+
+    participants_3 = participants_3[:12] # 최종적으로 12명만 유지
+    participants_3 = sorted(participants_3, key=lambda x: x['순위']) # 최종적으로 순위 순으로 정렬
+
+    # 매칭 3에 선발되지 않은 참여자 명단
+    p3_ids = {id(p) for p in participants_3}
+    non_selected_participants_3 = sorted([p for p in all_selected_participants if id(p) not in p3_ids], key=lambda x: x['순위'])
+
+
+    # 성별 요약 계산
+    def count_gender(participants):
+        total = len(participants)
+        male = sum(1 for p in participants if p.get('성별') == '남')
+        female = sum(1 for p in participants if p.get('성별') == '여')
+        return {'total': total, 'male': male, 'female': female}
+
+    summary_1 = count_gender(participants_1)
+    summary_2 = count_gender(participants_2)
+    summary_3 = count_gender(participants_3)
+
+    # --- 각 매칭에 대한 팀 생성 함수 호출 (기존 대진표 이미지 기반 로직) ---
+
+    # 매칭 1 대진표 (오버라이드 로직 포함)
+    if summary_1['total'] == 12:
+        female_members_1 = sorted([p for p in participants_1 if p['성별'] == '여'], key=lambda x: x['순위'])
+        male_members_1 = sorted([p for p in participants_1 if p['성별'] == '남'], key=lambda x: x['순위'])
+
+        if summary_1['female'] == 5 and summary_1['male'] == 7:
+            team_match_results_1 = [
+                {'court': '3번 코트', 'team_a': [female_members_1[1], female_members_1[4]], 'team_b': [female_members_1[2], female_members_1[3]]}, # 여자2위, 여자5위 vs 여자3위, 여자4위
+                {'court': '4번 코트', 'team_a': [female_members_1[0], male_members_1[0]], 'team_b': [male_members_1[5], male_members_1[6]]}, # 여자1위, 남자1위 vs 남자6위, 남자7위
+                {'court': '5번 코트', 'team_a': [male_members_1[1], male_members_1[4]], 'team_b': [male_members_1[2], male_members_1[3]]}  # 남자2위, 남자5위 vs 남자3위, 남자4위
+            ]
+        elif summary_1['female'] == 4 and summary_1['male'] == 8: # 매칭 1 - 여자 4명 로직 변경 (이미지 반영)
+            team_match_results_1 = [
+                {'court': '3번 코트', 'team_a': [female_members_1[0], female_members_1[3]], 'team_b': [female_members_1[1], female_members_1[2]]}, # 여자1위, 여자4위 vs 여자2위, 여자3위
+                {'court': '4번 코트', 'team_a': [male_members_1[0], male_members_1[7]], 'team_b': [male_members_1[1], male_members_1[6]]}, # 남자1위, 남자8위 vs 남자2위, 남자7위
+                {'court': '5번 코트', 'team_a': [male_members_1[2], male_members_1[5]], 'team_b': [male_members_1[3], male_members_1[4]]}  # 남자3위, 남자6위 vs 남자4위, 남자5위
+            ]
+        elif summary_1['female'] == 3 and summary_1['male'] == 9:
+            team_match_results_1 = [
+                {'court': '3번 코트', 'team_a': [female_members_1[0], male_members_1[0]], 'team_b': [male_members_1[7], male_members_1[8]]}, # 여자1위, 남자1위 vs 남자8위, 남자9위
+                {'court': '4번 코트', 'team_a': [female_members_1[1], male_members_1[1]], 'team_b': [female_members_1[2], male_members_1[2]]}, # 여자2위, 남자2위 vs 여자3위, 남자3위
+                {'court': '5번 코트', 'team_a': [male_members_1[3], male_members_1[6]], 'team_b': [male_members_1[4], male_members_1[5]]}  # 남자4위, 남자7위 vs 남자5위, 남자6위
+            ]
+        elif summary_1['female'] == 2 and summary_1['male'] == 10:
+            team_match_results_1 = [
+                {'court': '3번 코트', 'team_a': [female_members_1[0], male_members_1[0]], 'team_b': [female_members_1[1], male_members_1[1]]}, # 여자1위, 남자1위 vs 여자2위, 남자2위
+                {'court': '4번 코트', 'team_a': [male_members_1[2], male_members_1[9]], 'team_b': [male_members_1[3], male_members_1[8]]}, # 남자3위, 남자10위 vs 남자4위, 남자9위
+                {'court': '5번 코트', 'team_a': [male_members_1[4], male_members_1[7]], 'team_b': [male_members_1[5], male_members_1[6]]}  # 남자5위, 남자8위 vs 남자6위, 남자7위
+            ]
+        elif summary_1['female'] == 1 and summary_1['male'] == 11:
+            team_match_results_1 = [
+                {'court': '3번 코트', 'team_a': [female_members_1[0], male_members_1[0]], 'team_b': [male_members_1[9], male_members_1[10]]}, # 여자1위, 남자1위 vs 남자10위, 남자11위
+                {'court': '4번 코트', 'team_a': [male_members_1[1], male_members_1[8]], 'team_b': [male_members_1[2], male_members_1[7]]}, # 남자2위, 남자9위 vs 남자3위, 남자8위
+                {'court': '5번 코트', 'team_a': [male_members_1[3], male_members_1[6]], 'team_b': [male_members_1[4], male_members_1[5]]}  # 남자4위, 남자7위 vs 남자5위, 남자6위
+            ]
+        elif summary_1['female'] == 0 and summary_1['male'] == 12:
+            team_match_results_1 = [
+                {'court': '3번 코트', 'team_a': [male_members_1[0], male_members_1[11]], 'team_b': [male_members_1[1], male_members_1[10]]}, # 남자1위, 남자12위 vs 남자2위, 남자11위
+                {'court': '4번 코트', 'team_a': [male_members_1[2], male_members_1[9]], 'team_b': [male_members_1[3], male_members_1[8]]}, # 남자3위, 남자10위 vs 남자4위, 남자9위
+                {'court': '5번 코트', 'team_a': [male_members_1[4], male_members_1[7]], 'team_b': [male_members_1[5], male_members_1[6]]}  # 남자5위, 남자8위 vs 남자6위, 남자7위
+            ]
+
+    # 매칭 2 대진표 (오버라이드 로직 포함)
+    if summary_2['total'] == 12:
+        female_members_2 = sorted([p for p in participants_2 if p['성별'] == '여'], key=lambda x: x['순위'])
+        male_members_2 = sorted([p for p in participants_2 if p['성별'] == '남'], key=lambda x: x['순위'])
+
+        if summary_2['female'] == 5 and summary_2['male'] == 7:
+            team_match_results_2 = [
+                {'court': '3번 코트', 'team_a': [female_members_2[0], male_members_2[0]], 'team_b': [female_members_2[1], male_members_2[1]]}, # 여자1위, 남자1위 vs 여자2위, 남자2위
+                {'court': '4번 코트', 'team_a': [female_members_2[2], male_members_2[2]], 'team_b': [female_members_2[3], male_members_2[3]]}, # 여자3위, 남자3위 vs 여자4위, 남자4위
+                {'court': '5번 코트', 'team_a': [female_members_2[4], male_members_2[4]], 'team_b': [male_members_2[5], male_members_2[6]]}  # 여자5위, 남자5위 vs 남자6위, 남자7위
+            ]
+        elif summary_2['female'] == 4 and summary_2['male'] == 8: # 매칭 2 - 여자 4명 로직 변경 (이미지 반영)
+            team_match_results_2 = [
+                {'court': '3번 코트', 'team_a': [female_members_2[0], male_members_2[3]], 'team_b': [female_members_2[1], male_members_2[2]]}, # 여자1위, 남자4위 vs 여자2위, 남자3위
+                {'court': '4번 코트', 'team_a': [female_members_2[2], male_members_2[1]], 'team_b': [female_members_2[3], male_members_2[0]]}, # 여자3위, 남자2위 vs 여자4위, 남자1위
+                {'court': '5번 코트', 'team_a': [male_members_2[4], male_members_2[7]], 'team_b': [male_members_2[5], male_members_2[6]]}  # 남자5위, 남자8위 vs 남자6위, 남자7위
+            ]
+        elif summary_2['female'] == 3 and summary_2['male'] == 9:
+            team_match_results_2 = [
+                {'court': '3번 코트', 'team_a': [female_members_2[1], male_members_2[0]], 'team_b': [male_members_2[5], male_members_2[7]]}, # 여자2위, 남자1위 vs 남자6위, 남자8위
+                {'court': '4번 코트', 'team_a': [female_members_2[0], male_members_2[1]], 'team_b': [female_members_2[2], male_members_2[2]]}, # 여자1위, 남자2위 vs 여자3위, 남자3위
+                {'court': '5번 코트', 'team_a': [male_members_2[3], male_members_2[8]], 'team_b': [male_members_2[4], male_members_2[6]]}  # 남자4위, 남자9위 vs 남자5위, 남자7위
+            ]
+        elif summary_2['female'] == 2 and summary_2['male'] == 10:
+            team_match_results_2 = [
+                {'court': '3번 코트', 'team_a': [female_members_2[0], male_members_2[1]], 'team_b': [female_members_2[1], male_members_2[3]]}, # 여자1위, 남자2위 vs 여자2위, 남자4위
+                {'court': '4번 코트', 'team_a': [male_members_2[0], male_members_2[7]], 'team_b': [male_members_2[1], male_members_2[6]]}, # 남자1위, 남자8위 vs 남자2위, 남자7위
+                {'court': '5번 코트', 'team_a': [male_members_2[4], male_members_2[9]], 'team_b': [male_members_2[5], male_members_2[8]]}  # 남자5위, 남자10위 vs 남자6위, 남자9위
+            ]
+        elif summary_2['female'] == 1 and summary_2['male'] == 11:
+            team_match_results_2 = [
+                {'court': '3번 코트', 'team_a': [female_members_2[0], male_members_2[1]], 'team_b': [male_members_2[8], male_members_2[10]]}, # 여자1위, 남자2위 vs 남자9위, 남자11위
+                {'court': '4번 코트', 'team_a': [male_members_2[0], male_members_2[9]], 'team_b': [male_members_2[2], male_members_2[5]]}, # 남자1위, 남자10위 vs 남자3위, 남자6위
+                {'court': '5번 코트', 'team_a': [male_members_2[3], male_members_2[7]], 'team_b': [male_members_2[4], male_members_2[6]]}  # 남자4위, 남자8위 vs 남자5위, 남자7위
+            ]
+        elif summary_2['female'] == 0 and summary_2['male'] == 12:
+            team_match_results_2 = [
+                {'court': '3번 코트', 'team_a': [male_members_2[0], male_members_2[10]], 'team_b': [male_members_2[1], male_members_2[9]]}, # 남자1위, 남자11위 vs 남자2위, 남자10위
+                {'court': '4번 코트', 'team_a': [male_members_2[2], male_members_2[8]], 'team_b': [male_members_2[3], male_members_2[7]]}, # 남자3위, 남자9위 vs 남자4위, 남자8위
+                {'court': '5번 코트', 'team_a': [male_members_2[4], male_members_2[11]], 'team_b': [male_members_2[5], male_members_2[6]]}  # 남자5위, 남자12위 vs 남자6위, 남자7위
+            ]
+
+    # 매칭 3 대진표 (오버라이드 로직 포함)
+    if summary_3['total'] == 12:
+        female_members_3 = sorted([p for p in participants_3 if p['성별'] == '여'], key=lambda x: x['순위'])
+        male_members_3 = sorted([p for p in participants_3 if p['성별'] == '남'], key=lambda x: x['순위'])
+
+        if summary_3['female'] == 5 and summary_3['male'] == 7:
+            team_match_results_3 = [
+                {'court': '3번 코트', 'team_a': [male_members_3[1], female_members_3[3]], 'team_b': [male_members_3[3], female_members_3[0]]}, # 남자2위, 여자4위 vs 남자4위, 여자1위
+                {'court': '4번 코트', 'team_a': [male_members_3[0], female_members_3[4]], 'team_b': [male_members_3[6], female_members_3[2]]}, # 남자1위, 여자5위 vs 남자7위, 여자3위
+                {'court': '5번 코트', 'team_a': [female_members_3[1], male_members_3[2]], 'team_b': [male_members_3[4], male_members_3[5]]}  # 여자2위, 남자3위 vs 남자5위, 남자6위
+            ]
+        elif summary_3['female'] == 4 and summary_3['male'] == 8: # 매칭 3 - 여자 4명 로직 변경 (이미지 반영)
+            team_match_results_3 = [
+                {'court': '3번 코트', 'team_a': [female_members_3[0], male_members_3[7]], 'team_b': [female_members_3[3], male_members_3[4]]}, # 여자1위, 남자8위 vs 여자4위, 남자5위
+                {'court': '4번 코트', 'team_a': [female_members_3[1], male_members_3[6]], 'team_b': [female_members_3[2], male_members_3[5]]}, # 여자2위, 남자7위 vs 여자3위, 남자6위
+                {'court': '5번 코트', 'team_a': [male_members_3[0], male_members_3[3]], 'team_b': [male_members_3[1], male_members_3[2]]}  # 남자1위, 남자4위 vs 남자2위, 남자3위
+            ]
+        elif summary_3['female'] == 3 and summary_3['male'] == 9:
+            team_match_results_3 = [
+                {'court': '3번 코트', 'team_a': [female_members_3[2], male_members_3[0]], 'team_b': [male_members_3[6], male_members_3[7]]}, # 여자3위, 남자1위 vs 남자7위, 남자8위
+                {'court': '4번 코트', 'team_a': [female_members_3[1], male_members_3[1]], 'team_b': [female_members_3[0], male_members_3[2]]}, # 여자2위, 남자2위 vs 여자1위, 남자3위
+                {'court': '5번 코트', 'team_a': [male_members_3[3], male_members_3[5]], 'team_b': [male_members_3[4], male_members_3[8]]}  # 남자4위, 남자6위 vs 남자5위, 남자9위
+            ]
+        elif summary_3['female'] == 2 and summary_3['male'] == 10:
+            team_match_results_3 = [
+                {'court': '3번 코트', 'team_a': [male_members_3[0], female_members_3[0]], 'team_b': [male_members_3[1], female_members_3[1]]}, # 남자1위, 여자1위 vs 남자2위, 여자2위
+                {'court': '4번 코트', 'team_a': [male_members_3[2], male_members_3[8]], 'team_b': [male_members_3[3], male_members_3[7]]}, # 남자3위, 남자9위 vs 남자4위, 남자8위
+                {'court': '5번 코트', 'team_a': [male_members_3[4], male_members_3[9]], 'team_b': [male_members_3[5], male_members_3[6]]}  # 남자5위, 남자10위 vs 남자6위, 남자9위
+            ]
+        elif summary_3['female'] == 1 and summary_3['male'] == 11:
+            team_match_results_3 = [
+                {'court': '3번 코트', 'team_a': [female_members_3[0], male_members_3[2]], 'team_b': [male_members_3[8], male_members_3[9]]}, # 여자1위, 남자3위 vs 남자9위, 남자10위
+                {'court': '4번 코트', 'team_a': [male_members_3[1], male_members_3[10]], 'team_b': [male_members_3[3], male_members_3[7]]}, # 남자2위, 남자11위 vs 남자4위, 남자8위
+                {'court': '5번 코트', 'team_a': [male_members_3[4], male_members_3[6]], 'team_b': [male_members_3[0], male_members_3[5]]}  # 남자5위, 남자7위 vs 남자1위, 남자6위
+            ]
+        elif summary_3['female'] == 0 and summary_3['male'] == 12:
+            team_match_results_3 = [
+                {'court': '3번 코트', 'team_a': [male_members_3[0], male_members_3[9]], 'team_b': [male_members_3[1], male_members_3[8]]}, # 남자1위, 남자10위 vs 남자2위, 남자9위
+                {'court': '4번 코트', 'team_a': [male_members_3[2], male_members_3[7]], 'team_b': [male_members_3[3], male_members_3[6]]}, # 남자3위, 남자8위 vs 남자4위, 남자7위
+                {'court': '5번 코트', 'team_a': [male_members_3[4], male_members_3[11]], 'team_b': [male_members_3[5], male_members_3[10]]}  # 남자5위, 남자12위 vs 남자6위, 남자11위
+            ]
+
+
+    print(f"최종 participants_1 길이: {len(participants_1)}")
+    print(f"최종 participants_2 길이: {len(participants_2)}")
+    print(f"최종 participants_3 길이: {len(participants_3)}")
+    # print(f"최종 summary_1: {summary_1}")
+    # print(f"최종 team_match_results_1: {team_match_results_1}")
+
 
     return render_template(
         'members.html',
         members=members_data,
-        team_match_results_1=team_match_results_1,
+        participants_1=participants_1,
+        participants_2=participants_2,
+        participants_3=participants_3,
         summary_1=summary_1,
-        non_selected_participants_1=non_selected_participants_1,
-        team_match_results_2=team_match_results_2,
         summary_2=summary_2,
-        non_selected_participants_2=non_selected_participants_2,
-        team_match_results_3=team_match_results_3,
         summary_3=summary_3,
-        non_selected_participants_3=non_selected_participants_3
+        team_match_results_1=team_match_results_1,
+        team_match_results_2=team_match_results_2,
+        team_match_results_3=team_match_results_3,
+        non_selected_participants_1=non_selected_participants_1, 
+        non_selected_participants_2=non_selected_participants_2, 
+        non_selected_participants_3=non_selected_participants_3 
     )
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
