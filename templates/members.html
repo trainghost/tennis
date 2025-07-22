@@ -5,27 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>회원 명단 및 매칭</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { display: flex; flex-wrap: wrap; gap: 20px; }
-        .section { border: 1px solid #ccc; padding: 15px; border-radius: 8px; flex: 1; min-width: 300px; }
-        h1, h2, h3 { color: #333; }
+        /*
+        ******************************************************************
+        여기에 이전에 사용하시던 '예쁜' CSS 스타일 코드를 모두 붙여넣으세요.
+        이 부분은 비어 있으므로, 직접 채워 넣으셔야 합니다.
+        ******************************************************************
+        */
+
+        /*
+        아래는 제가 기능 구현을 위해 추가했던 기본 스타일입니다.
+        위에 붙여넣을 기존 CSS와 중복되거나 충돌한다면 조절하거나 삭제하셔도 됩니다.
+        */
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f7f6; color: #333; }
+        .container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        .section {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            min-width: 320px;
+            max-width: 450px;
+        }
+        h1 { text-align: center; color: #0056b3; margin-bottom: 30px; }
+        h2 { color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; }
+        h3 { color: #555; margin-top: 25px; margin-bottom: 10px; }
         ul { list-style-type: none; padding: 0; }
-        li { margin-bottom: 5px; }
-        .member-list { margin-top: 20px; }
-        .member-item { display: flex; align-items: center; margin-bottom: 8px; }
-        .member-item label { margin-left: 5px; margin-right: 10px; }
-        .member-item input[type="number"] { width: 50px; text-align: center; margin-right: 5px; }
-        .match-result { margin-top: 15px; }
-        .match-result h4 { margin-bottom: 5px; color: #555; }
-        .match-teams { display: flex; justify-content: space-around; background-color: #f9f9f9; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
-        .team { text-align: center; }
-        .team-a, .team-b { font-weight: bold; color: #007bff; }
-        .vs { margin: 0 10px; }
-        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #0056b3; }
-        .summary { margin-bottom: 20px; padding: 10px; background-color: #e9ecef; border-radius: 5px; }
-        .summary p { margin: 0; }
-        hr { border: 0; height: 1px; background: #eee; margin: 20px 0; }
+        li { margin-bottom: 5px; padding: 3px 0; }
+        .member-list { margin-top: 20px; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03); }
+        .member-item { display: flex; align-items: center; margin-bottom: 10px; background-color: #f8f8f8; padding: 8px 12px; border-radius: 5px; border: 1px solid #eee; }
+        .member-item label { margin-left: 8px; margin-right: 15px; font-weight: bold; min-width: 100px; }
+        .member-item input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        .member-item input[type="checkbox"] { transform: scale(1.2); margin-right: 5px; }
+        .member-item label[for^="early_"], .member-item label[for^="late_"] { font-weight: normal; margin-right: 15px; min-width: unset; }
+
+        .match-result { margin-top: 20px; padding: 15px; background-color: #eaf6ff; border-radius: 8px; border: 1px solid #cce0ff; }
+        .match-result h4 { margin-top: 0; margin-bottom: 10px; color: #0056b3; font-size: 1.1em; }
+        .match-teams { display: flex; justify-content: space-around; align-items: center; padding: 10px 0; }
+        .team { text-align: center; flex: 1; }
+        .team-a, .team-b { font-weight: bold; color: #007bff; font-size: 1.1em; }
+        .vs { margin: 0 15px; font-weight: bold; color: #666; font-size: 1.2em; }
+        button {
+            display: block;
+            width: fit-content;
+            margin: 25px auto 0;
+            padding: 12px 25px;
+            background-color: #28a745; /* Green for action */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        button:hover { background-color: #218838; }
+        .summary { margin-bottom: 20px; padding: 15px; background-color: #e2f0d9; border-radius: 8px; border: 1px solid #b7e09e; color: #3a753a; }
+        .summary p { margin: 5px 0; font-size: 0.95em; }
+        hr { border: 0; height: 1px; background: #dcdcdc; margin: 30px 0; }
+        .non-selected-section { margin-top: 30px; padding-top: 20px; border-top: 1px dashed #ccc; }
+        .non-selected-section h3 { color: #dc3545; } /* Red for caution */
+        .non-selected-section ul { padding-left: 20px; }
+        .non-selected-section li { color: #666; }
     </style>
 </head>
 <body>
@@ -81,16 +130,18 @@
                 <p>매칭 1 결과가 없습니다. 인원을 확인하거나 '선택 저장 및 매칭 결과 보기' 버튼을 눌러주세요.</p>
             {% endif %}
 
-            <h3>매칭 1 미배정 인원: {{ non_selected_participants_1 | length }}명</h3>
-            {% if non_selected_participants_1 %}
-                <ul>
-                {% for p in non_selected_participants_1 %}
-                    <li>{{ p['순위'] }}위 {{ p['이름'] }} ({{ p['성별'] }})</li>
-                {% endfor %}
-                </ul>
-            {% else %}
-                <p>매칭 1에 미배정된 인원이 없습니다.</p>
-            {% endif %}
+            <div class="non-selected-section">
+                <h3>매칭 1 미배정 인원: {{ non_selected_participants_1 | length }}명</h3>
+                {% if non_selected_participants_1 %}
+                    <ul>
+                    {% for p in non_selected_participants_1 %}
+                        <li>{{ p['순위'] }}위 {{ p['이름'] }} ({{ p['성별'] }})</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>매칭 1에 미배정된 인원이 없습니다.</p>
+                {% endif %}
+            </div>
         </div>
 
         <div class="section">
@@ -123,16 +174,18 @@
                 <p>매칭 2 결과가 없습니다. 인원을 확인하거나 '선택 저장 및 매칭 결과 보기' 버튼을 눌러주세요.</p>
             {% endif %}
 
-            <h3>매칭 2 미배정 인원: {{ non_selected_participants_2 | length }}명</h3>
-            {% if non_selected_participants_2 %}
-                <ul>
-                {% for p in non_selected_participants_2 %}
-                    <li>{{ p['순위'] }}위 {{ p['이름'] }} ({{ p['성별'] }})</li>
-                {% endfor %}
-                </ul>
-            {% else %}
-                <p>매칭 2에 미배정된 인원이 없습니다.</p>
-            {% endif %}
+            <div class="non-selected-section">
+                <h3>매칭 2 미배정 인원: {{ non_selected_participants_2 | length }}명</h3>
+                {% if non_selected_participants_2 %}
+                    <ul>
+                    {% for p in non_selected_participants_2 %}
+                        <li>{{ p['순위'] }}위 {{ p['이름'] }} ({{ p['성별'] }})</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>매칭 2에 미배정된 인원이 없습니다.</p>
+                {% endif %}
+            </div>
         </div>
 
         <div class="section">
@@ -165,16 +218,18 @@
                 <p>매칭 3 결과가 없습니다. 인원을 확인하거나 '선택 저장 및 매칭 결과 보기' 버튼을 눌러주세요.</p>
             {% endif %}
 
-            <h3>매칭 3 미배정 인원: {{ non_selected_participants_3 | length }}명</h3>
-            {% if non_selected_participants_3 %}
-                <ul>
-                {% for p in non_selected_participants_3 %}
-                    <li>{{ p['순위'] }}위 {{ p['이름'] }} ({{ p['성별'] }})</li>
-                {% endfor %}
-                </ul>
-            {% else %}
-                <p>매칭 3에 미배정된 인원이 없습니다.</p>
-            {% endif %}
+            <div class="non-selected-section">
+                <h3>매칭 3 미배정 인원: {{ non_selected_participants_3 | length }}명</h3>
+                {% if non_selected_participants_3 %}
+                    <ul>
+                    {% for p in non_selected_participants_3 %}
+                        <li>{{ p['순위'] }}위 {{ p['이름'] }} ({{ p['성별'] }})</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>매칭 3에 미배정된 인원이 없습니다.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
 </body>
